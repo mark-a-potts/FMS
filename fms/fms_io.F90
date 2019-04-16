@@ -148,7 +148,7 @@ integer, parameter, private :: max_split_file = 50
 integer, parameter, private :: max_fields=400
 integer, parameter, private :: max_axes=40
 integer, parameter, private :: max_atts=20
-integer, parameter, private :: max_domains = 10
+integer, parameter, private :: max_domains = 1000
 integer, parameter, private :: MAX_TIME_LEVEL_REGISTER = 2
 integer, parameter, private :: MAX_TIME_LEVEL_WRITE = 20
 integer, parameter          :: max_axis_size=10000
@@ -685,8 +685,9 @@ subroutine fms_io_init()
   end select
 
 ! Initially allocate  files_write and files_read
-  allocate(files_write(max_files_w),files_read(max_files_r))
-  allocate(registered_file(max_files_w))
+  if (.not. allocated(files_write) ) allocate(files_write(max_files_w))
+  if (.not. allocated(files_read) ) allocate(files_read(max_files_r))
+  if (.not. allocated(registered_file)) allocate(registered_file(max_files_w))
 
   do i = 1, max_domains
      array_domain(i) = NULL_DOMAIN2D
@@ -1744,8 +1745,8 @@ function register_restart_field_r2d8(fileObj, filename, fieldname, data, domain,
                           position, tile_count, longname=longname, units=units, compressed_axis=compressed_axis, &
                           read_only=read_only, owns_data=restart_owns_data)
   endif
-  
-  
+
+
   fileObj%p2dr8(fileObj%var(index_field)%siz(4), index_field)%p => data
   fileObj%var(index_field)%ndim = 2
   register_restart_field_r2d8 = index_field
@@ -1793,7 +1794,7 @@ function register_restart_field_r3d8(fileObj, filename, fieldname, data, domain,
                           position, tile_count, longname=longname, units=units, compressed_axis=compressed_axis, &
                           read_only=read_only, owns_data=restart_owns_data)
   endif
-  
+
   fileObj%p3dr8(fileObj%var(index_field)%siz(4), index_field)%p => data
   fileObj%var(index_field)%ndim = 3
   register_restart_field_r3d8 = index_field
@@ -5979,7 +5980,7 @@ subroutine read_data_2d_UG(filename,fieldname,data,SG_domain,UG_domain,timelevel
   type(domainUG), intent(in)                   :: UG_domain
   integer, intent(in) , optional               :: timelevel
   real, dimension(:,:), allocatable            :: data_2d
-  integer :: is, ie, js, je  
+  integer :: is, ie, js, je
 
   call mpp_get_compute_domain(SG_domain, is, ie, js, je)
   allocate(data_2d(is:ie,js:je))
