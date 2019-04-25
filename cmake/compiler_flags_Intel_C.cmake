@@ -7,23 +7,25 @@
 # FLAGS COMMON TO ALL BUILD TYPES
 ####################################################################
 
+set( CMAKE_C_FLAGS "${CMAKE_C_FLAGS} -sox -traceback" )
+
 ####################################################################
 # RELEASE FLAGS
 ####################################################################
 
-set( CMAKE_C_FLAGS_RELEASE     "-O3" )
+set( CMAKE_C_FLAGS_RELEASE     "-O2 -debug minimal" )
 
 ####################################################################
 # DEBUG FLAGS
 ####################################################################
 
-set( CMAKE_C_FLAGS_DEBUG       "-O0 -g -traceback -fp-trap=common" )
+set( CMAKE_C_FLAGS_DEBUG       "-O0 -g -ftrapuv" )
 
 ####################################################################
 # BIT REPRODUCIBLE FLAGS
 ####################################################################
 
-set( CMAKE_C_FLAGS_BIT         "-O2" )
+set( CMAKE_C_FLAGS_BIT         "-O2 -debug minimal" )
 
 ####################################################################
 # LINK FLAGS

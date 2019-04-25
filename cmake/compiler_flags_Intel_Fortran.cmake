@@ -7,25 +7,25 @@
 # FLAGS COMMON TO ALL BUILD TYPES
 ####################################################################
 
-set( CMAKE_Fortran_FLAGS "${CMAKE_Fortran_FLAGS} -traceback -r8 -stack_temps -safe_cray_ptr -assume byterecl -ftz -align all -fno-alias -convert big_endian -fPIC -fpe0 -fp-model source -heap-arrays 32 -assume noold_maxminloc -align dcommons")
+set( CMAKE_Fortran_FLAGS "${CMAKE_Fortran_FLAGS} -fno-alias -auto -safe-cray-ptr -ftz -assume byterecl -i4 -r8 -nowarn -sox -traceback" )
 
 ####################################################################
 # RELEASE FLAGS
 ####################################################################
 
-set( CMAKE_Fortran_FLAGS_RELEASE "-O3 -qopt-report0 -qno-offload" )
+set( CMAKE_Fortran_FLAGS_RELEASE "-O3 -debug minimal -fp-model source" )
 
 ####################################################################
 # DEBUG FLAGS
 ####################################################################
 
-set( CMAKE_Fortran_FLAGS_DEBUG   "-g -O0 -debug -nolib-inline -fno-inline-functions -assume protect_parens,minus0 -prec-div -prec-sqrt -check bounds -check uninit -fp-stack-check -ftrapuv -warn unused" )
+set( CMAKE_Fortran_FLAGS_DEBUG   "-g -O0 -check -check noarg_temp_created -check nopointer -warn -warn noerrors -fpe0 -ftrapuv" )
 
 ####################################################################
 # BIT REPRODUCIBLE FLAGS
 ####################################################################
 
-set( CMAKE_Fortran_FLAGS_BIT     "-O2 -ip -ipo -unroll -inline -no-heap-arrays" )
+set( CMAKE_Fortran_FLAGS_BIT     "-O2 -debug minimal -fp-model source" )
 
 ####################################################################
 # LINK FLAGS

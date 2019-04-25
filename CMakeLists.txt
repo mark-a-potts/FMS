@@ -45,10 +45,6 @@ ecbuild_include_mpi()
 link_libraries(${MPI_Fortran_LIBRARIES})
 
 # OpenMP
-ecbuild_add_option( FEATURE OMP
-                    DESCRIPTION "Support for OpenMP threaded parallelism"
-                    REQUIRED_PACKAGES "OMP COMPONENTS Fortran" )
-
 if( HAVE_OMP )
   ecbuild_enable_omp()
 else()
@@ -56,8 +52,7 @@ else()
 endif()
 
 # NetCDF
-set( NETCDF_F90 ON CACHE BOOL "Compile with Fortran NetCDF" )
-find_package( NetCDF REQUIRED )
+find_package( NetCDF REQUIRED COMPONENTS F90 )
 include_directories( ${NETCDF_INCLUDE_DIR} )
 
 ################################################################################
