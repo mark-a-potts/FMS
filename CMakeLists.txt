@@ -90,6 +90,11 @@ include( fms_compiler_flags )
 include_directories( ${FMS_INCLUDE_DIRS} ${FMS_EXTRA_INCLUDE_DIRS} )
 
 ################################################################################
+list( APPEND fms_hdr_files
+include/file_version.h
+include/fms_platform.h
+)
+
 list( APPEND fms_src_files
 amip_interp/amip_interp.F90
 astronomy/astronomy.F90
@@ -153,8 +158,6 @@ horiz_interp/horiz_interp_conserve.F90
 horiz_interp/horiz_interp_spherical.F90
 horiz_interp/horiz_interp_type.F90
 horiz_interp/test_horiz_interp.F90
-include/file_version.h
-include/fms_platform.h
 interpolator/interpolator.F90
 memutils/memuse.c
 memutils/memutils.F90
@@ -296,11 +299,16 @@ tridiagonal/tridiagonal.F90
 
 ################################################################################
 ecbuild_add_library( TARGET   fms
-                     SOURCES  ${fms_src_files}
+                     SOURCES  ${fms_hdr_files} ${fms_src_files}
                      LIBS     ${NETCDF_LIBRARIES}
+                     INSTALL_HEADERS_LIST ${fms_hdr_files}
                      LINKER_LANGUAGE ${FMS_LINKER_LANGUAGE}
                     )
 ################################################################################
+
+if(ECBUILD_INSTALL_FORTRAN_MODULES)
+  install(DIRECTORY ${CMAKE_Fortran_MODULE_DIRECTORY}/${CMAKE_CFG_INTDIR} DESTINATION ${INSTALL_INCLUDE_DIR} )
+endif()
 
 ################################################################################
 # Finalise configuration
