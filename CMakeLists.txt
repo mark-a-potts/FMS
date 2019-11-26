@@ -306,6 +306,16 @@ ecbuild_add_library( TARGET   fms
                     )
 ################################################################################
 
+# glibc>=2.30 includes gettid in unistd.h if _GNU_SOURCE is set
+include(CheckSymbolExists)
+set(CMAKE_REQUIRED_DEFINITIONS "-D_GNU_SOURCE=1")
+check_symbol_exists("gettid" "unistd.h" HAVE_GETTID)
+unset(CMAKE_REQUIRED_DEFINITIONS)
+if(HAVE_GETTID)
+    target_compile_definitions(fms PRIVATE HAVE_GETTID)
+endif()
+
+
 if(ECBUILD_INSTALL_FORTRAN_MODULES)
   install(DIRECTORY ${CMAKE_Fortran_MODULE_DIRECTORY}/${CMAKE_CFG_INTDIR} DESTINATION ${INSTALL_INCLUDE_DIR} )
 endif()
