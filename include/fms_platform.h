@@ -111,6 +111,7 @@ use,intrinsic :: iso_c_binding, only: c_double,c_float,c_int64_t, &
 #if defined(QUAD_PRECISION) && !defined(__PGI)
 #undef NO_QUAD_PRECISION
 #else
+#undef QUAD_KIND
 #define QUAD_KIND DOUBLE_KIND
 #endif
 
