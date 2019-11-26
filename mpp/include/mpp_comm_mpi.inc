@@ -1383,32 +1383,49 @@ end subroutine mpp_gsm_free
 !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
 
 #define MPP_TYPE_CREATE_ mpp_type_create_int4
+#undef MPP_TYPE_
 #define MPP_TYPE_ integer(INT_KIND)
+#undef MPI_TYPE_
 #define MPI_TYPE_ MPI_INTEGER4
 #include <mpp_type_mpi.h>
 
+#undef MPP_TYPE_CREATE_
 #define MPP_TYPE_CREATE_ mpp_type_create_int8
+#undef MPP_TYPE_
 #define MPP_TYPE_ integer(LONG_KIND)
+#undef MPI_TYPE_
 #define MPI_TYPE_ MPI_INTEGER8
 #include <mpp_type_mpi.h>
 
+#undef MPP_TYPE_CREATE_
 #define MPP_TYPE_CREATE_ mpp_type_create_real4
+#undef MPP_TYPE_
 #define MPP_TYPE_ real(FLOAT_KIND)
+#undef MPI_TYPE_
 #define MPI_TYPE_ MPI_REAL4
 #include <mpp_type_mpi.h>
 
+#undef MPP_TYPE_CREATE_
 #define MPP_TYPE_CREATE_ mpp_type_create_real8
+#undef MPP_TYPE_
 #define MPP_TYPE_ real(DOUBLE_KIND)
+#undef MPI_TYPE_
 #define MPI_TYPE_ MPI_REAL8
 #include <mpp_type_mpi.h>
 
+#undef MPP_TYPE_CREATE_
 #define MPP_TYPE_CREATE_ mpp_type_create_logical4
+#undef MPP_TYPE_
 #define MPP_TYPE_ logical(INT_KIND)
+#undef MPI_TYPE_
 #define MPI_TYPE_ MPI_INTEGER4
 #include <mpp_type_mpi.h>
 
+#undef MPP_TYPE_CREATE_
 #define MPP_TYPE_CREATE_ mpp_type_create_logical8
+#undef MPP_TYPE_
 #define MPP_TYPE_ logical(LONG_KIND)
+#undef MPI_TYPE_
 #define MPI_TYPE_ MPI_INTEGER8
 #include <mpp_type_mpi.h>
 
