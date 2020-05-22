@@ -308,7 +308,7 @@ ecbuild_add_library( TARGET   fms
                     )
 ################################################################################
 
-if(CMAKE_Fortran_COMPILER_ID MATCHES GNU AND CMAKE_Fortran_COMPILER VERSION_GREATER_EQUAL 10)
+if(CMAKE_Fortran_COMPILER_ID MATCHES GNU AND CMAKE_Fortran_COMPILER_VERSION VERSION_GREATER_EQUAL 10)
     target_compile_options(${PROJECT_NAME} PRIVATE -fallow-invalid-boz -fallow-argument-mismatch)
 endif()
 
