@@ -308,6 +308,10 @@ ecbuild_add_library( TARGET   fms
                     )
 ################################################################################
 
+if(CMAKE_Fortran_COMPILER_ID MATCHES GNU AND CMAKE_Fortran_COMPILER_VERSION VERSION_GREATER_EQUAL 10)
+    target_compile_options(${PROJECT_NAME} PRIVATE -fallow-invalid-boz -fallow-argument-mismatch)
+endif()
+
 # glibc>=2.30 includes gettid in unistd.h if _GNU_SOURCE is set
 include(CheckSymbolExists)
 set(CMAKE_REQUIRED_DEFINITIONS "-D_GNU_SOURCE=1")
