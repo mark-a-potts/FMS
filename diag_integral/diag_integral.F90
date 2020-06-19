@@ -53,7 +53,7 @@
 !!     <td> fms_mod </td>
 !!     <td> open_file, file_exist, error_mesg, open_namelist_file,
 !!          check_nml_error, fms_init, mpp_pe, mpp_root_pe, FATAL,
-!!          write_version_number, stdlog, close_file </td>
+!!          write_version_number, stdlog </td>
 !!   </tr>
 !!   <tr>
 !!     <td> constants_mod </td>
@@ -100,15 +100,17 @@ use time_manager_mod, only:  time_type, get_time, set_time,  &
                              operator(+),  operator(-),      &
                              operator(==), operator(>=),     &
                              operator(/=)
-use mpp_mod,          only:  input_nml_file
-use fms_mod,          only:  open_file, file_exist, error_mesg, &
-                             open_namelist_file, check_nml_error, &
+use mpp_mod,          only:  input_nml_file, get_unit
+use fms_mod,          only:  open_file, error_mesg, &
+                             check_nml_error, &
                              fms_init, &
                              mpp_pe, mpp_root_pe,&
                              FATAL, write_version_number, &
-                             stdlog, close_file
+                             stdlog
+use fms2_io_mod,      only:  file_exists
 use constants_mod,    only:  radius, constants_init
 use mpp_mod,          only:  mpp_sum, mpp_init
+use ensemble_manager_mod, only : get_ensemble_id, get_ensemble_size
 
 !-------------------------------------------------------------------------------
 
@@ -116,11 +118,9 @@ implicit none
 private
 
 !-------------------------------------------------------------------------------
-!----------- version number for this module -------------------
-
-character(len=128) :: version = '$Id$'
-character(len=128) :: tagname = '$Name$'
-
+! version number of this module
+! Include variable "version" to be written to log file.
+#include<file_version.h>
 
 !-------------------------------------------------------------------------------
 !------ interfaces ------
@@ -348,10 +348,10 @@ real,dimension(:,:), intent(in), optional :: blon, blat, area_in
 !       i,j
 !-------------------------------------------------------------------------------
       real    :: rsize
-      integer :: unit, io, ierr, nc, logunit
+      integer :: io, ierr, nc, logunit
       integer :: field_size_local
       real    :: sum_area_local
-
+      integer :: ensemble_size(6)
 !-------------------------------------------------------------------------------
 !    if routine has already been executed, exit.
 !-------------------------------------------------------------------------------
@@ -376,24 +376,15 @@ real,dimension(:,:), intent(in), optional :: blon, blat, area_in
 !-------------------------------------------------------------------------------
 !    read namelist.
 !-------------------------------------------------------------------------------
-      if ( file_exist('input.nml')) then
-#ifdef INTERNAL_FILE_NML
+      if ( file_exists('input.nml')) then
         read (input_nml_file, nml=diag_integral_nml, iostat=io)
         ierr = check_nml_error(io,'diag_integral_nml')
-#else
-        unit =  open_namelist_file ( )
-        ierr=1; do while (ierr /= 0)
-        read  (unit, nml=diag_integral_nml, iostat=io, end=10)
-        ierr = check_nml_error(io,'diag_integral_nml')
-        end do
-10      call close_file (unit)
-#endif
       endif
 
 !-------------------------------------------------------------------------------
 !    write version number and namelist to logfile.
 !-------------------------------------------------------------------------------
-      call write_version_number (version, tagname)
+      call write_version_number ('DIAG_INTEGRAL_MOD', version)
       logunit = stdlog()
       if (mpp_pe() == mpp_root_pe() ) &
                        write (logunit, nml=diag_integral_nml)
@@ -435,6 +426,10 @@ real,dimension(:,:), intent(in), optional :: blon, blat, area_in
 !    diag_unit.
 !-------------------------------------------------------------------------------
       if (file_name(1:1) /= ' ' ) then
+        ensemble_size = get_ensemble_size()
+        if (ensemble_size(1) > 1) then
+          file_name = ensemble_file_name(file_name)
+        endif
         nc = len_trim(file_name)
         diag_unit = open_file (file_name(1:nc), action='write')
       endif
@@ -1522,7 +1517,41 @@ real, dimension (size(data,1),size(data,2)) :: data2
 
 end function vert_diag_integral
 
-
+!> \brief Adds .ens_## to the diag_integral.out file name
+function ensemble_file_name(fname) result(updated_file_name)
+     character (len=mxch), intent(inout) :: fname
+     character (len=mxch) :: updated_file_name
+     integer :: ensemble_id_int
+     character(len=7) :: ensemble_suffix
+     character(len=2) :: ensemble_id_char
+     integer :: i
+     !> Make sure the file name short enough to handle adding the ensemble number
+     if (len(trim(fname)) > mxch-7) call error_mesg ('diag_integral_mod :: ensemble_file_name',  &
+          trim(fname)//" is too long and can not support adding ens_XX.  Please shorten the "//&
+          "file_name in the diag_integral_nml", FATAL)
+     !> Get the ensemble ID and convert it to a string
+          ensemble_id_int = get_ensemble_id()
+          write(ensemble_id_char,"(I0)") ensemble_id_int
+     !> Add a 0 if the ensemble is less than 10 (2 digit)
+          if (ensemble_id_int < 10) then
+               ensemble_suffix = ".ens_0"//trim(ensemble_id_char)
+          elseif (ensemble_id_int >= 10 .and. ensemble_id_int < 100) then
+               ensemble_suffix = ".ens_"//trim(ensemble_id_char)
+          else
+               call error_mesg ('diag_integral_mod',  &
+                ' Does not support ensemble sizes over 99.', FATAL)
+          endif
+     !> Insert the ens_ string in the correct location
+     !> Loop through to find the last period
+          do i=len(trim(fname)),2,-1
+               if (fname(i:i) == ".") then
+                    updated_file_name = fname(1:i-1)//trim(ensemble_suffix)//fname(i:mxch)
+                    return
+               endif
+          enddo
+     !> Add to the end if there is no period in the file name
+          updated_file_name = trim(fname)//trim(ensemble_suffix)
+end function ensemble_file_name
 
 
 

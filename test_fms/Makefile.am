@@ -1,18 +1,33 @@
-# This is an automake file for the test_fms directory of the FMS
-# package.
+#***********************************************************************
+#*                   GNU Lesser General Public License
+#*
+#* This file is part of the GFDL Flexible Modeling System (FMS).
+#*
+#* FMS is free software: you can redistribute it and/or modify it under
+#* the terms of the GNU Lesser General Public License as published by
+#* the Free Software Foundation, either version 3 of the License, or (at
+#* your option) any later version.
+#*
+#* FMS is distributed in the hope that it will be useful, but WITHOUT
+#* ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or
+#* FITNESS FOR A PARTICULAR PURPOSE.  See the GNU General Public License
+#* for more details.
+#*
+#* You should have received a copy of the GNU Lesser General Public
+#* License along with FMS.  If not, see <http://www.gnu.org/licenses/>.
+#***********************************************************************
 
-# Ed Hartnett 2/22/19
+# This is the automake file for the test_fms directory.
+# Ed Hartnett 9/20/2019
 
-# Find the fms_mod.mod file.
-AM_CPPFLAGS = -I${top_builddir}/fms
-AM_CPPFLAGS += -I${top_builddir}/constants
-LDADD = ${top_builddir}/libFMS/.libs/libFMS.la
+# This directory stores libtool macros, put there by aclocal.
+ACLOCAL_AMFLAGS = -I m4
 
-# Build this test program.
-check_PROGRAMS = tst_fms1
+# Make targets will be run in each subdirectory. Order is significant.
+SUBDIRS = diag_manager data_override exchange monin_obukhov drifters \
+mosaic interpolator fms fms2_io mpp mpp_io time_interp time_manager \
+horiz_interp field_manager axis_utils affinity
 
-# This is the source code for the test.
-tst_fms1_SOURCES = tst_fms1.F90
-
-# Run the test program.
-TESTS = tst_fms1
+# This input file must be distributed, it is turned into
+# test_common.sh by configure.
+EXTRA_DIST = test_common.sh.in

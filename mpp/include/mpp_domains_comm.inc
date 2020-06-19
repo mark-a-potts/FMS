@@ -30,9 +30,9 @@
       integer,                    intent(in)    :: isize_in
       integer,                    intent(in)    :: jsize_in
       integer,                    intent(in)    :: ksize_in
-      integer,                    intent(in)    :: isize_out 
+      integer,                    intent(in)    :: isize_out
       integer,                    intent(in)    :: jsize_out
-      integer,                    intent(in)    :: ksize_out 
+      integer,                    intent(in)    :: ksize_out
 
       integer(LONG_KIND) :: domain_id
       integer :: m, list
@@ -93,7 +93,7 @@
       d_comm%jsize_in = jsize_in
       d_comm%ke = ke
 
-!send 
+!send
       lsize = d_comm%Slist_size-1
       allocate(d_comm%sendis(1,0:lsize), d_comm%sendie(1,0:lsize), &
                d_comm%sendjs(1,0:lsize), d_comm%sendje(1,0:lsize), &
@@ -132,10 +132,10 @@
            d_comm%S_msize(list) = (ie-is+1)*(je-js+1)*ke
            isL(list) = is-ioff+1; jsL(list) = js-joff+1
          end if
-      end do 
+      end do
 
       call mpp_sync_self()
-!recv 
+!recv
       d_comm%domain_out =>domain_out
       d_comm%Rlist_size = size(domain_in%list(:))
       d_comm%isize_out = isize_out
@@ -177,7 +177,7 @@
            d_comm%recvjs(1,list)=js; d_comm%recvje(1,list)=je
            d_comm%R_msize(list) = (ie-is+1)*(je-js+1)*ke
          end if
-      end do 
+      end do
 
       d_comm%isize_max = isize_in; call mpp_max(d_comm%isize_max)
       d_comm%jsize_max = jsize_in; call mpp_max(d_comm%jsize_max)
@@ -208,7 +208,7 @@
       integer,                    intent(in)    :: isize_g
       integer,                    intent(in)    :: jsize_g
       integer,                    intent(in)    :: isize_l
-      integer,                    intent(in)    :: jsize_l 
+      integer,                    intent(in)    :: jsize_l
       integer,                    intent(in)    :: ksize
       integer(LONG_KIND),optional,intent(in)    :: l_addr2
       integer, optional,          intent(in)    :: flags
@@ -244,12 +244,12 @@
            call mpp_error( FATAL, 'MPP_GLOBAL_FIELD_INIT_COMM: incoming arrays do not match domain.' )
 
       if( isize_l == (domain%x(1)%compute%size+ishift) .AND. jsize_l == (domain%y(1)%compute%size+jshift) )then
-!local is on compute domain                                                                      
-        ioff = -domain%x(1)%compute%begin + 1                                                       
+!local is on compute domain
+        ioff = -domain%x(1)%compute%begin + 1
         joff = -domain%y(1)%compute%begin + 1
       elseif( isize_l == (domain%x(1)%memory%size+ishift) .AND. jsize_l == (domain%y(1)%memory%size+jshift) )then
-!local is on data domain                                                                        
-        ioff = -domain%x(1)%data%begin + 1                                                         
+!local is on data domain
+        ioff = -domain%x(1)%data%begin + 1
         joff = -domain%y(1)%data%begin + 1
       else
         call mpp_error(FATAL,'MPP_GLOBAL_FIELD_INIT_COMM: incoming field array must match either compute domain or data domain.')
@@ -258,7 +258,7 @@
     ! Create unique domain identifier
       domain_id=set_domain_id(domain%id,ksize,update_flags, position=position)
       d_comm =>get_comm(domain_id,l_addr,l_addr2)
-      
+
       if(d_comm%initialized)return   ! Found existing field/domain communicator
       d_comm%domain => domain
       d_comm%isize_in = isize_l; d_comm%isize_out = isize_g
@@ -280,7 +280,7 @@
         allocate(d_comm%cfrom_pe(0:lsize-1))
         allocate(d_comm%recvis(1,0:lsize-1), d_comm%recvie(1,0:lsize-1), &
                  d_comm%recvjs(1,0:lsize-1), d_comm%recvje(1,0:lsize-1), &
-                 d_comm%R_msize(0:lsize-1))                          
+                 d_comm%R_msize(0:lsize-1))
         d_comm%cfrom_pe=-1
         d_comm%recvis=0; d_comm%recvie=0
         d_comm%recvjs=0; d_comm%recvje=0;
@@ -298,18 +298,18 @@
 
       elseif( yonly )then
         lsize =  size(domain%y(1)%list(:))
-!send  
+!send
         allocate(d_comm%cto_pe(0:lsize-1))
         d_comm%cto_pe=-1
         do list = 0,lsize
           lpos = mod(domain%y(1)%pos+lsize-list,lsize)
           d_comm%cto_pe(list) = domain%y(1)%list(lpos)%pe
         end do
-!recv    
+!recv
         allocate(d_comm%cfrom_pe(0:lsize-1))
         allocate(d_comm%recvis(1,0:lsize-1), d_comm%recvie(1,0:lsize-1), &
                  d_comm%recvjs(1,0:lsize-1), d_comm%recvje(1,0:lsize-1), &
-                 d_comm%R_msize(0:lsize-1))                          
+                 d_comm%R_msize(0:lsize-1))
         d_comm%cfrom_pe=-1
         d_comm%recvis=0; d_comm%recvie=0
         d_comm%recvjs=0; d_comm%recvje=0;
@@ -326,7 +326,7 @@
         end do
 
       else
-         nlist = size(domain%list(:))  
+         nlist = size(domain%list(:))
          tile_id = domain%tile_id(1)
 
          lsize = 0
@@ -372,7 +372,7 @@
       d_comm%Slist_size = lsize
       d_comm%Rlist_size = lsize
 
-!send 
+!send
       allocate(d_comm%sendis(1,0:lsize-1), d_comm%sendie(1,0:lsize-1), &
                d_comm%sendjs(1,0:lsize-1), d_comm%sendje(1,0:lsize-1), &
                d_comm%S_msize(0:lsize-1),isL(0:lsize-1),jsL(0:lsize-1))
@@ -415,7 +415,7 @@
                   //trim(text)//') from all PEs.' )
          end if
       end if
-            
+
       DEALLOCATE(slist_addr,isL,jsL)
 
       d_comm%initialized = .true.
@@ -428,7 +428,7 @@
     ! event. Thus no attempt is made to salvage freed d_comm's.
       type(domain2D),             intent(in)    :: domain_in
       integer(LONG_KIND),         intent(in)    :: l_addr
-      type(domain2D),             intent(in)    :: domain_out  
+      type(domain2D),             intent(in)    :: domain_out
       integer(LONG_KIND),         intent(in)    :: l_addr2
       integer,                    intent(in)    :: ksize,lsize
 
@@ -592,11 +592,11 @@
 
       do i=key_idx,n_idx-1
         sorted(i) = sorted(i+1)
-        idx(i)    = idx(i+1)  
-      end do                  
-      sorted(n_idx) = -9999 
+        idx(i)    = idx(i+1)
+      end do
+      sorted(n_idx) = -9999
       idx(n_idx) = -9999
-      n_idx = n_idx - 1  
+      n_idx = n_idx - 1
     end subroutine pop_key
 
 
@@ -612,19 +612,19 @@
       insert = 1
       n = -1  ! value not in list
       if(n_key == 0)return  ! first call
-      
+
       if(key < sorted(1))then
         insert = 1; return
       elseif(key > sorted(n_key))then
         insert = n_key+1; return
       endif
-        
+
       if(key == sorted(1))then
         n = 1; return
       elseif(key == sorted(n_key))then
         n = n_key; return
       endif
-        
+
       not_found = .true.
       n = n_key/2 + 1
       n_min=1; n_max=n_key
@@ -663,20 +663,20 @@
       d_comm%l_addrx =-9999
       d_comm%l_addry =-9999
 
-      if( _ALLOCATED(d_comm%sendis) )   DEALLOCATE(d_comm%sendis);    !!d_comm%sendis =>NULL()
-      if( _ALLOCATED(d_comm%sendie) )   DEALLOCATE(d_comm%sendie);    !!d_comm%sendie =>NULL()
-      if( _ALLOCATED(d_comm%sendjs) )   DEALLOCATE(d_comm%sendjs);    !!d_comm%sendjs =>NULL()
-      if( _ALLOCATED(d_comm%sendje) )   DEALLOCATE(d_comm%sendje);    !!d_comm%sendje =>NULL()
-      if( _ALLOCATED(d_comm%S_msize) )  DEALLOCATE(d_comm%S_msize);   !!d_comm%S_msize =>NULL()
-      if( _ALLOCATED(d_comm%S_do_buf) ) DEALLOCATE(d_comm%S_do_buf);  !!d_comm%S_do_buf =>NULL()
-      if( _ALLOCATED(d_comm%cto_pe) )   DEALLOCATE(d_comm%cto_pe);    !!d_comm%cto_pe  =>NULL()
-      if( _ALLOCATED(d_comm%recvis) )   DEALLOCATE(d_comm%recvis);    !!d_comm%recvis =>NULL()
-      if( _ALLOCATED(d_comm%recvie) )   DEALLOCATE(d_comm%recvie);    !!d_comm%recvie =>NULL()
-      if( _ALLOCATED(d_comm%recvjs) )   DEALLOCATE(d_comm%recvjs);    !!d_comm%recvjs =>NULL()
-      if( _ALLOCATED(d_comm%recvje) )   DEALLOCATE(d_comm%recvje);    !!d_comm%recvje =>NULL()
-      if( _ALLOCATED(d_comm%R_msize) )  DEALLOCATE(d_comm%R_msize);   !!d_comm%R_msize =>NULL()
-      if( _ALLOCATED(d_comm%R_do_buf) ) DEALLOCATE(d_comm%R_do_buf);  !!d_comm%R_do_buf =>NULL()
-      if( _ALLOCATED(d_comm%cfrom_pe) ) DEALLOCATE(d_comm%cfrom_pe);  !!d_comm%cfrom_pe  =>NULL()
+      if( allocated(d_comm%sendis) )   DEALLOCATE(d_comm%sendis);    !!d_comm%sendis =>NULL()
+      if( allocated(d_comm%sendie) )   DEALLOCATE(d_comm%sendie);    !!d_comm%sendie =>NULL()
+      if( allocated(d_comm%sendjs) )   DEALLOCATE(d_comm%sendjs);    !!d_comm%sendjs =>NULL()
+      if( allocated(d_comm%sendje) )   DEALLOCATE(d_comm%sendje);    !!d_comm%sendje =>NULL()
+      if( allocated(d_comm%S_msize) )  DEALLOCATE(d_comm%S_msize);   !!d_comm%S_msize =>NULL()
+      if( allocated(d_comm%S_do_buf) ) DEALLOCATE(d_comm%S_do_buf);  !!d_comm%S_do_buf =>NULL()
+      if( allocated(d_comm%cto_pe) )   DEALLOCATE(d_comm%cto_pe);    !!d_comm%cto_pe  =>NULL()
+      if( allocated(d_comm%recvis) )   DEALLOCATE(d_comm%recvis);    !!d_comm%recvis =>NULL()
+      if( allocated(d_comm%recvie) )   DEALLOCATE(d_comm%recvie);    !!d_comm%recvie =>NULL()
+      if( allocated(d_comm%recvjs) )   DEALLOCATE(d_comm%recvjs);    !!d_comm%recvjs =>NULL()
+      if( allocated(d_comm%recvje) )   DEALLOCATE(d_comm%recvje);    !!d_comm%recvje =>NULL()
+      if( allocated(d_comm%R_msize) )  DEALLOCATE(d_comm%R_msize);   !!d_comm%R_msize =>NULL()
+      if( allocated(d_comm%R_do_buf) ) DEALLOCATE(d_comm%R_do_buf);  !!d_comm%R_do_buf =>NULL()
+      if( allocated(d_comm%cfrom_pe) ) DEALLOCATE(d_comm%cfrom_pe);  !!d_comm%cfrom_pe  =>NULL()
       d_comm%Slist_size=0; d_comm%Rlist_size=0
       d_comm%isize=0; d_comm%jsize=0; d_comm%ke=0
       d_comm%isize_in=0; d_comm%jsize_in=0
@@ -684,14 +684,14 @@
       d_comm%isize_max=0; d_comm%jsize_max=0
       d_comm%gf_ioff=0; d_comm%gf_joff=0
     ! Remote data
-      if( _ALLOCATED(d_comm%isizeR) )   DEALLOCATE(d_comm%isizeR);    !!dd_comm%isizeR =>NULL()
-      if( _ALLOCATED(d_comm%jsizeR) )   DEALLOCATE(d_comm%jsizeR);    !!dd_comm%jsizeR =>NULL()
-      if( _ALLOCATED(d_comm%sendisR) )  DEALLOCATE(d_comm%sendisR);   !!dd_comm%sendisR =>NULL()
-      if( _ALLOCATED(d_comm%sendjsR) )  DEALLOCATE(d_comm%sendjsR);   !!dd_comm%sendjsR =>NULL()
-      if( _ALLOCATED(d_comm%rem_addr) ) DEALLOCATE(d_comm%rem_addr);  !!dd_comm%rem_addr  =>NULL()
-      if( _ALLOCATED(d_comm%rem_addrx) )DEALLOCATE(d_comm%rem_addrx); !!dd_comm%rem_addrx =>NULL()
-      if( _ALLOCATED(d_comm%rem_addry) )DEALLOCATE(d_comm%rem_addry); !!dd_comm%rem_addry =>NULL()
-      if( _ALLOCATED(d_comm%rem_addrl) )DEALLOCATE(d_comm%rem_addrl); !!dd_comm%rem_addrl =>NULL()
+      if( allocated(d_comm%isizeR) )   DEALLOCATE(d_comm%isizeR);    !!dd_comm%isizeR =>NULL()
+      if( allocated(d_comm%jsizeR) )   DEALLOCATE(d_comm%jsizeR);    !!dd_comm%jsizeR =>NULL()
+      if( allocated(d_comm%sendisR) )  DEALLOCATE(d_comm%sendisR);   !!dd_comm%sendisR =>NULL()
+      if( allocated(d_comm%sendjsR) )  DEALLOCATE(d_comm%sendjsR);   !!dd_comm%sendjsR =>NULL()
+      if( allocated(d_comm%rem_addr) ) DEALLOCATE(d_comm%rem_addr);  !!dd_comm%rem_addr  =>NULL()
+      if( allocated(d_comm%rem_addrx) )DEALLOCATE(d_comm%rem_addrx); !!dd_comm%rem_addrx =>NULL()
+      if( allocated(d_comm%rem_addry) )DEALLOCATE(d_comm%rem_addry); !!dd_comm%rem_addry =>NULL()
+      if( allocated(d_comm%rem_addrl) )DEALLOCATE(d_comm%rem_addrl); !!dd_comm%rem_addrl =>NULL()
     end subroutine deallocate_comm
 
 
@@ -704,7 +704,7 @@
       integer           , optional, intent(in) :: whalo, ehalo, shalo, nhalo
 
       integer(LONG_KIND)             :: set_domain_id
-      
+
       set_domain_id=d_id + KE_BASE*int(ksize,KIND(d_id))
       if(PRESENT(flags))set_domain_id=set_domain_id+int(flags,KIND(d_id))
       if(PRESENT(gtype))set_domain_id=set_domain_id+GT_BASE*int(gtype,KIND(d_id))  ! Must be LONG_KIND arithmetic
@@ -744,4 +744,3 @@
 
 
 !#######################################################################
-

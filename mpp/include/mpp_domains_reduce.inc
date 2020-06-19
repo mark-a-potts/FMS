@@ -246,6 +246,75 @@
 #endif
 
 #undef DO_EFP_SUM_
+
+#ifdef OVERLOAD_C4
+#undef MPP_GLOBAL_SUM_
+#define MPP_GLOBAL_SUM_ mpp_global_sum_c4_2d
+#undef MPP_EXTRA_INDICES_
+#define MPP_EXTRA_INDICES_
+#undef MPP_TYPE_
+#define MPP_TYPE_ complex(FLOAT_KIND)
+#include <mpp_global_sum.h>
+
+#undef MPP_GLOBAL_SUM_
+#define MPP_GLOBAL_SUM_ mpp_global_sum_c4_3d
+#undef MPP_EXTRA_INDICES_
+#define MPP_EXTRA_INDICES_ ,:
+#undef MPP_TYPE_
+#define MPP_TYPE_ complex(FLOAT_KIND)
+#include <mpp_global_sum.h>
+
+#undef MPP_GLOBAL_SUM_
+#define MPP_GLOBAL_SUM_ mpp_global_sum_c4_4d
+#undef MPP_EXTRA_INDICES_
+#define MPP_EXTRA_INDICES_ ,:,:
+#undef MPP_TYPE_
+#define MPP_TYPE_ complex(FLOAT_KIND)
+#include <mpp_global_sum.h>
+
+#undef MPP_GLOBAL_SUM_
+#define MPP_GLOBAL_SUM_ mpp_global_sum_c4_5d
+#undef MPP_EXTRA_INDICES_
+#define MPP_EXTRA_INDICES_ ,:,:,:
+#undef MPP_TYPE_
+#define MPP_TYPE_ complex(FLOAT_KIND)
+#include <mpp_global_sum.h>
+#endif
+
+#ifdef OVERLOAD_C8
+#undef MPP_GLOBAL_SUM_
+#define MPP_GLOBAL_SUM_ mpp_global_sum_c8_2d
+#undef MPP_EXTRA_INDICES_
+#define MPP_EXTRA_INDICES_
+#undef MPP_TYPE_
+#define MPP_TYPE_ complex(DOUBLE_KIND)
+#include <mpp_global_sum.h>
+
+#undef MPP_GLOBAL_SUM_
+#define MPP_GLOBAL_SUM_ mpp_global_sum_c8_3d
+#undef MPP_EXTRA_INDICES_
+#define MPP_EXTRA_INDICES_ ,:
+#undef MPP_TYPE_
+#define MPP_TYPE_ complex(DOUBLE_KIND)
+#include <mpp_global_sum.h>
+
+#undef MPP_GLOBAL_SUM_
+#define MPP_GLOBAL_SUM_ mpp_global_sum_c8_4d
+#undef MPP_EXTRA_INDICES_
+#define MPP_EXTRA_INDICES_ ,:,:
+#undef MPP_TYPE_
+#define MPP_TYPE_ complex(DOUBLE_KIND)
+#include <mpp_global_sum.h>
+
+#undef MPP_GLOBAL_SUM_
+#define MPP_GLOBAL_SUM_ mpp_global_sum_c8_5d
+#undef MPP_EXTRA_INDICES_
+#define MPP_EXTRA_INDICES_ ,:,:,:
+#undef MPP_TYPE_
+#define MPP_TYPE_ complex(DOUBLE_KIND)
+#include <mpp_global_sum.h>
+#endif
+
 #ifndef no_8byte_integers
 #undef MPP_GLOBAL_SUM_
 #define MPP_GLOBAL_SUM_ mpp_global_sum_i8_2d
@@ -951,7 +1020,7 @@
 #define MPP_DO_GLOBAL_FIELD_A2A_3D_ mpp_do_global_field2D_a2a_r8_3d
 #undef MPP_TYPE_
 #define MPP_TYPE_ real(DOUBLE_KIND)
-#include <mpp_do_global_field.h>                                    
+#include <mpp_do_global_field.h>
 
 #ifdef OVERLOAD_C8
 #undef MPP_DO_GLOBAL_FIELD_3D_
@@ -960,7 +1029,7 @@
 #define MPP_DO_GLOBAL_FIELD_A2A_3D_ mpp_do_global_field2D_a2a_c8_3d
 #undef MPP_TYPE_
 #define MPP_TYPE_ complex(DOUBLE_KIND)
-#include <mpp_do_global_field.h>                                    
+#include <mpp_do_global_field.h>
 #endif
 
 #ifndef no_8byte_integers
@@ -970,7 +1039,7 @@
 #define MPP_DO_GLOBAL_FIELD_A2A_3D_ mpp_do_global_field2D_a2a_i8_3d
 #undef MPP_TYPE_
 #define MPP_TYPE_ integer(LONG_KIND)
-#include <mpp_do_global_field.h>                                    
+#include <mpp_do_global_field.h>
 
 #undef MPP_DO_GLOBAL_FIELD_3D_
 #undef MPP_DO_GLOBAL_FIELD_A2A_3D_
@@ -979,7 +1048,7 @@
 #define LOGICAL_VARIABLE
 #undef MPP_TYPE_
 #define MPP_TYPE_ logical(LONG_KIND)
-#include <mpp_do_global_field.h>                                    
+#include <mpp_do_global_field.h>
 #undef LOGICAL_VARIABLE
 #endif
 
@@ -990,7 +1059,7 @@
 #define MPP_DO_GLOBAL_FIELD_A2A_3D_ mpp_do_global_field2D_a2a_r4_3d
 #undef MPP_TYPE_
 #define MPP_TYPE_ real(FLOAT_KIND)
-#include <mpp_do_global_field.h>                                    
+#include <mpp_do_global_field.h>
 #endif
 
 #ifdef OVERLOAD_C4
@@ -1000,7 +1069,7 @@
 #define MPP_DO_GLOBAL_FIELD_A2A_3D_ mpp_do_global_field2D_a2a_c4_3d
 #undef MPP_TYPE_
 #define MPP_TYPE_ complex(FLOAT_KIND)
-#include <mpp_do_global_field.h>                                    
+#include <mpp_do_global_field.h>
 #endif
 
 #undef MPP_DO_GLOBAL_FIELD_3D_
@@ -1009,7 +1078,7 @@
 #define MPP_DO_GLOBAL_FIELD_A2A_3D_ mpp_do_global_field2D_a2a_i4_3d
 #undef MPP_TYPE_
 #define MPP_TYPE_ integer(INT_KIND)
-#include <mpp_do_global_field.h>                                    
+#include <mpp_do_global_field.h>
 
 #undef MPP_DO_GLOBAL_FIELD_3D_
 #undef MPP_DO_GLOBAL_FIELD_A2A_3D_
@@ -1025,14 +1094,14 @@
 #define MPP_DO_GLOBAL_FIELD_3D_AD_ mpp_do_global_field2D_r8_3d_ad
 #undef MPP_TYPE_
 #define MPP_TYPE_ real(DOUBLE_KIND)
-#include <mpp_do_global_field_ad.h>                                    
+#include <mpp_do_global_field_ad.h>
 
 #ifdef OVERLOAD_C8
 #undef MPP_DO_GLOBAL_FIELD_3D_AD_
 #define MPP_DO_GLOBAL_FIELD_3D_AD_ mpp_do_global_field2D_c8_3d_ad
 #undef MPP_TYPE_
 #define MPP_TYPE_ complex(DOUBLE_KIND)
-#include <mpp_do_global_field_ad.h>                                    
+#include <mpp_do_global_field_ad.h>
 #endif
 
 #ifndef no_8byte_integers
@@ -1040,14 +1109,14 @@
 #define MPP_DO_GLOBAL_FIELD_3D_AD_ mpp_do_global_field2D_i8_3d_ad
 #undef MPP_TYPE_
 #define MPP_TYPE_ integer(LONG_KIND)
-#include <mpp_do_global_field_ad.h>                                    
+#include <mpp_do_global_field_ad.h>
 
 #undef MPP_DO_GLOBAL_FIELD_3D_AD_
 #define MPP_DO_GLOBAL_FIELD_3D_AD_ mpp_do_global_field2D_l8_3d_ad
 #define LOGICAL_VARIABLE
 #undef MPP_TYPE_
 #define MPP_TYPE_ logical(LONG_KIND)
-#include <mpp_do_global_field_ad.h>                                    
+#include <mpp_do_global_field_ad.h>
 #undef LOGICAL_VARIABLE
 #endif
 
@@ -1056,7 +1125,7 @@
 #define MPP_DO_GLOBAL_FIELD_3D_AD_ mpp_do_global_field2D_r4_3d_ad
 #undef MPP_TYPE_
 #define MPP_TYPE_ real(FLOAT_KIND)
-#include <mpp_do_global_field_ad.h>                                    
+#include <mpp_do_global_field_ad.h>
 #endif
 
 #ifdef OVERLOAD_C4
@@ -1064,14 +1133,14 @@
 #define MPP_DO_GLOBAL_FIELD_3D_AD_ mpp_do_global_field2D_c4_3d_ad
 #undef MPP_TYPE_
 #define MPP_TYPE_ complex(FLOAT_KIND)
-#include <mpp_do_global_field_ad.h>                                    
+#include <mpp_do_global_field_ad.h>
 #endif
 
 #undef MPP_DO_GLOBAL_FIELD_3D_AD_
 #define MPP_DO_GLOBAL_FIELD_3D_AD_ mpp_do_global_field2D_i4_3d_ad
 #undef MPP_TYPE_
 #define MPP_TYPE_ integer(INT_KIND)
-#include <mpp_do_global_field_ad.h>                                    
+#include <mpp_do_global_field_ad.h>
 
 #undef MPP_DO_GLOBAL_FIELD_3D_AD_
 #define MPP_DO_GLOBAL_FIELD_3D_AD_ mpp_do_global_field2D_l4_3d_ad
@@ -1080,4 +1149,3 @@
 #define MPP_TYPE_ logical(INT_KIND)
 #include <mpp_do_global_field_ad.h>
 #undef LOGICAL_VARIABLE
-

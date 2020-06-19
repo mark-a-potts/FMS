@@ -1,4 +1,23 @@
-    subroutine MPP_DO_GLOBAL_FIELD_3D_( domain, local, global, tile, ishift, jshift, flags, default_data)
+!***********************************************************************
+!*                   GNU Lesser General Public License
+!*
+!* This file is part of the GFDL Flexible Modeling System (FMS).
+!*
+!* FMS is free software: you can redistribute it and/or modify it under
+!* the terms of the GNU Lesser General Public License as published by
+!* the Free Software Foundation, either version 3 of the License, or (at
+!* your option) any later version.
+!*
+!* FMS is distributed in the hope that it will be useful, but WITHOUT
+!* ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or
+!* FITNESS FOR A PARTICULAR PURPOSE.  See the GNU General Public License
+!* for more details.
+!*
+!* You should have received a copy of the GNU Lesser General Public
+!* License along with FMS.  If not, see <http://www.gnu.org/licenses/>.
+!***********************************************************************
+
+      subroutine MPP_DO_GLOBAL_FIELD_3D_( domain, local, global, tile, ishift, jshift, flags, default_data)
 !get a global field from a local field
 !local field may be on compute OR data domain
       type(domain2D), intent(in)    :: domain
@@ -17,7 +36,7 @@
       integer :: stackuse
       character(len=8) :: text
 
-      pointer( ptr_local,  clocal  ) 
+      pointer( ptr_local,  clocal  )
       pointer( ptr_remote, cremote )
 
       stackuse = size(clocal(:))+size(cremote(:))
@@ -47,14 +66,14 @@
          root_only = BTEST(flags, ROOT_GLOBAL)
          if( (xonly .or. yonly) .AND. root_only ) then
             call mpp_error( WARNING, 'MPP_GLOBAL_FIELD: flags = XUPDATE+GLOBAL_ROOT_ONLY or ' // &
-                 'flags = YUPDATE+GLOBAL_ROOT_ONLY is not supported, will ignore GLOBAL_ROOT_ONLY' )     
+                 'flags = YUPDATE+GLOBAL_ROOT_ONLY is not supported, will ignore GLOBAL_ROOT_ONLY' )
             root_only = .FALSE.
          endif
       endif
-    
+
       global_on_this_pe =  .NOT. root_only .OR. domain%pe == domain%tile_root_pe
       ipos = 0; jpos = 0
-      if(global_on_this_pe ) then      
+      if(global_on_this_pe ) then
          if(size(local,3).NE.size(global,3) ) call mpp_error( FATAL, &
               'MPP_GLOBAL_FIELD: mismatch of third dimension size of global and local')
          if( size(global,1).NE.(domain%x(tile)%global%size+ishift) .OR. size(global,2).NE.(domain%y(tile)%global%size+jshift))then
@@ -250,7 +269,7 @@
       end if
 
       call mpp_sync_self()
-          
+
       return
     end subroutine MPP_DO_GLOBAL_FIELD_3D_
 

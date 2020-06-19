@@ -28,6 +28,10 @@
 subroutine mpp_error_basic( errortype, errormsg )
   !a very basic error handler
   !uses ABORT and FLUSH calls, may need to use cpp to rename
+#ifdef __INTEL_COMPILER
+  ! Intel module containing tracebackQQ
+   use ifcore
+#endif
   integer,                    intent(in) :: errortype
   character(len=*), intent(in), optional :: errormsg
   character(len=512)                     :: text
@@ -55,16 +59,15 @@ subroutine mpp_error_basic( errortype, errormsg )
      if(pe==root_pe)write( out_unit,'(a)' )trim(text)
   case default
      errunit = stderr()
-#ifdef __SX
-     write( errunit, * )trim(text)
-#else
      write( errunit, '(/a/)' )trim(text)
-#endif
      if(pe==root_pe)write( out_unit,'(/a/)' )trim(text)
      if( errortype.EQ.FATAL .OR. warnings_are_fatal )then
         call FLUSH(out_unit)
-#ifdef sgi_mipspro
-        call TRACE_BACK_STACK_AND_PRINT()
+#ifdef __INTEL_COMPILER
+  ! Get traceback and return quietly for correct abort
+        call TRACEBACKQQ(user_exit_code=-1)
+#elif __GFORTRAN__
+        call BACKTRACE
 #endif
         call MPI_ABORT( MPI_COMM_WORLD, 1, error )
      end if
@@ -79,7 +82,7 @@ end subroutine mpp_error_basic
 !#####################################################################
 !--- makes a PE set out of a PE list. A PE list is an ordered list of PEs
 !--- a PE set is a triad (start,log2stride,size) for SHMEM, an a communicator for MPI
-!--- if stride is non-uniform or not a power of 2, 
+!--- if stride is non-uniform or not a power of 2,
 !--- will return error (not required for MPI but enforced for uniformity)
 function get_peset(pelist)
   integer                       :: get_peset
@@ -101,7 +104,7 @@ function get_peset(pelist)
   endif
 
   allocate( sorted(size(pelist(:))) )
-  sorted = pelist 
+  sorted = pelist
   errunit = stderr()
   if( debug )write( errunit,* )'pelist=', pelist
 
@@ -245,9 +248,9 @@ subroutine mpp_sync_self( pelist, check, request, msg_size, msg_type)
                 call mpp_error(FATAL, "mpp_sync_self: size_recv does not match of data received")
            endif
            size_recv(m) = 0
-        end do    
+        end do
         cur_recv_request = 0
-     end select 
+     end select
   endif
   if( debug .and. (current_clock.NE.0) )call increment_current_clock(EVENT_WAIT)
   return

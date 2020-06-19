@@ -30,11 +30,11 @@
 !  </OVERVIEW>
 !  <DESCRIPTION>
 !    Called to initialize the <TT>mpp_domains_mod</TT> package.
-!    
+!
 !    <TT>flags</TT> can be set to <TT>MPP_VERBOSE</TT> to have
 !    <TT>mpp_domains_mod</TT> keep you informed of what it's up
 !    to. <TT>MPP_DEBUG</TT> returns even more information for debugging.
-!    
+!
 !    <TT>mpp_domains_init</TT> will call <TT>mpp_init</TT>, to make sure
 !    <LINK SRC="mpp.html"><TT>mpp_mod</TT></LINK> is initialized. (Repeated
 !    calls to <TT>mpp_init</TT> do no harm, so don't worry if you already
@@ -56,7 +56,7 @@
 #ifdef use_libSMA
       integer(POINTER_KIND) :: ptr_info_var(16)
       pointer( ptr_info, ptr_info_var )
-#endif 
+#endif
 
       if( module_is_initialized )return
       call mpp_init(flags)           !this is a no-op if already initialized
@@ -72,7 +72,7 @@
           domain_clocks_on = flags.EQ.MPP_DOMAIN_TIME
       end if
 
-      !--- namelist 
+      !--- namelist
 #ifdef INTERNAL_FILE_NML
       read (input_nml_file, mpp_domains_nml, iostat=io_status)
 #else
@@ -103,11 +103,11 @@
       case("note")
          debug_update_level = NOTe
       case default
-         call mpp_error(FATAL, "mpp_domains_init: debug_update_level should be 'none', 'fatal', 'warning', or 'note'") 
+         call mpp_error(FATAL, "mpp_domains_init: debug_update_level should be 'none', 'fatal', 'warning', or 'note'")
       end select
 
       allocate(nonblock_data(MAX_NONBLOCK_UPDATE))
-      
+
       do n = 1, MAX_NONBLOCK_UPDATE
          call init_nonblock_type(nonblock_data(n))
       enddo
@@ -115,7 +115,7 @@
       call mpp_domains_set_stack_size(32768) !default, pretty arbitrary
 #ifdef use_libSMA
       call mpp_malloc( ptr_info, 16, l )
-#endif 
+#endif
 
 !NULL_DOMAIN is a domaintype that can be used to initialize to undef
       call mpp_define_null_domain(NULL_DOMAIN1d);
@@ -202,7 +202,7 @@ end subroutine init_nonblock_type
 !  </TEMPLATE>
 ! </SUBROUTINE>
     subroutine mpp_domains_exit()
-      integer :: unit 
+      integer :: unit
       if( .NOT.module_is_initialized )return
       call mpp_max(mpp_domains_stack_hwm)
       unit = stdout()
@@ -235,14 +235,14 @@ end subroutine init_nonblock_type
   integer, dimension(:), intent(in) :: pelist1, pelist2 ! pe list for the two groups
   type(domain2d),        intent(in) :: domain   ! domain for each pe
   character(len=*),     intent(in)  :: mesg     ! message to be printed out
-                                               ! if differences found      
+                                               ! if differences found
   integer, intent(in), optional     :: w_halo,  s_halo, e_halo, n_halo
                                        ! halo size for west, south, east and north
   logical, intent(in), optional     :: force_abort   ! when true, call mpp_error if any difference
-                                                    ! found. default value is false.  
-  integer, intent(in), optional     :: position    ! when domain is symmetry, only value = CENTER is 
-                                                   ! implemented. 
-            
+                                                    ! found. default value is false.
+  integer, intent(in), optional     :: position    ! when domain is symmetry, only value = CENTER is
+                                                   ! implemented.
+
     integer :: k
     character(len=256) :: temp_mesg
 
@@ -252,10 +252,10 @@ end subroutine init_nonblock_type
        call mpp_check_field_2d(field_in(:,:,k), pelist1, pelist2, domain, temp_mesg, &
                                  w_halo, s_halo, e_halo, n_halo, force_abort, position )
     enddo
-    
+
   end subroutine mpp_check_field_3D
-  
-  
+
+
 !#####################################################################################
 ! <SUBROUTINE NAME="mpp_check_field_2D" INTERFACE="mpp_check_field">
 !   <IN NAME="field_in" TYPE="real, dimension(:,:)" > </IN>
@@ -275,15 +275,15 @@ end subroutine init_nonblock_type
                                        ! halo size for west, south, east and north
   logical, intent(in), optional     :: force_abort   ! when, call mpp_error if any difference
                                                     ! found. default value is false.
-  integer, intent(in), optional     :: position    ! when domain is symmetry, only value = CENTER is 
-                                                   ! implemented. 
+  integer, intent(in), optional     :: position    ! when domain is symmetry, only value = CENTER is
+                                                   ! implemented.
 
      if(present(position)) then
         if(position .NE. CENTER .AND. domain%symmetry) call mpp_error(FATAL,  &
            'mpp_check_field: when domain is symmetry, only value CENTER is implemented, contact author')
      endif
 
-     if(size(pelist2(:)) == 1) then                 
+     if(size(pelist2(:)) == 1) then
         call mpp_check_field_2d_type1(field_in, pelist1, pelist2, domain, mesg, &
                                       w_halo, s_halo, e_halo, n_halo, force_abort )
      else if(size(pelist1(:)) == 1) then
@@ -310,11 +310,11 @@ end subroutine init_nonblock_type
   integer, dimension(:), intent(in) :: pelist1, pelist2 ! pe list for the two groups
   type(domain2d),        intent(in) :: domain   ! domain for each pe
   character(len=*),     intent(in)  :: mesg     ! message to be printed out
-                                               ! if differences found      
+                                               ! if differences found
   integer, intent(in), optional     :: w_halo,  s_halo, e_halo, n_halo
                                        ! halo size for west, south, east and north
   logical, intent(in), optional     :: force_abort   ! when, call mpp_error if any difference
-                                                    ! found. default value is false.         
+                                                    ! found. default value is false.
 ! some local data
 
   integer                :: pe,npes, p
@@ -366,14 +366,14 @@ end subroutine init_nonblock_type
      print*, 'on pe ', pe, 'domain: ', isc, iec, jsc, jec, isd, ied, jsd, jed, 'size of field: ', size(field_in,1), size(field_in,2)
      call mpp_error(FATAL,'mpp_check_field: '//trim(mesg)//':field is not on compute, data or global domain')
   endif
-     
+
   call mpp_sync_self()
-  
+
   if(any(pelist1 == pe)) then  ! send data to root pe
-  
+
      im = ie-is+1; jm=je-js+1
      allocate(send_buffer(im*jm))
-     
+
      ibounds(1) = is; ibounds(2) = ie; ibounds(3) = js; ibounds(4) = je
      l = 0
      do i = is,ie
@@ -387,7 +387,7 @@ end subroutine init_nonblock_type
      call mpp_send(ibounds(1), plen=4, to_pe=pelist2(1), tag=COMM_TAG_1)
      call mpp_send(send_buffer(1),plen=im*jm, to_pe=pelist2(1), tag=COMM_TAG_2)
      deallocate(send_buffer)
-     
+
    else if(pelist2(1) == pe) then        ! receive data and compare
      do p = pelist1(1), pelist1(size(pelist1(:)))
      ! Force use of "scalar", integer pointer mpp interface
@@ -400,7 +400,7 @@ end subroutine init_nonblock_type
      ! Force use of "scalar", integer pointer mpp interface
         call mpp_recv(send_buffer(1),glen=im*jm,from_pe=p, tag=COMM_TAG_2)
         l = 0
-        
+
 !  compare here, the comparison criteria can be changed according to need
         do i = is,ie
         do j = js,je
@@ -416,26 +416,26 @@ end subroutine init_nonblock_type
         enddo
         enddo
       enddo
-        
+
       if(check_success) then
          print*, trim(mesg)//": ", 'comparison between 1 pe and ', npes-1, ' pes is ok'
       endif
   ! release memery
       deallocate(field1, send_buffer)
     endif
-      
+
     deallocate(field2)
-    
+
     call mpp_sync()
-    
+
   end subroutine mpp_check_field_2d_type1
-  
+
 !####################################################################
 
   subroutine mpp_check_field_2d_type2(field_in, pelist1, pelist2, domain, mesg,force_abort)
 !  This routine is used to check field between running on m pe (root pe) and
 !  n pe. This routine can not check halo.
- 
+
   real, dimension(:,:),  intent(in) :: field_in
   type(domain2d),        intent(in) :: domain
   integer, dimension(:), intent(in) :: pelist1
@@ -443,12 +443,12 @@ end subroutine init_nonblock_type
   character(len=*),      intent(in) :: mesg
   logical, intent(in), optional     :: force_abort   ! when, call mpp_error if any difference
                                                     ! found. default value is false.
-! some local variables                              
+! some local variables
   logical                :: check_success, error_exit
   real, dimension(:,:), allocatable :: field1, field2
   integer :: i, j, pe, npes, isd,ied,jsd,jed, is, ie, js, je
   type(domain2d) :: domain1, domain2
-  
+
     check_success = .TRUE.
     error_exit    = .FALSE.
     if(present(force_abort)) error_exit = force_abort
@@ -457,7 +457,7 @@ end subroutine init_nonblock_type
     call mpp_sync_self()
     if(any(pelist1 == pe)) domain1 = domain
     if(any(pelist2 == pe)) domain2 = domain
-    
+
 !  Comparison is made on pelist2.
     if(any(pelist2 == pe)) then
        call mpp_get_data_domain(domain2, isd, ied, jsd, jed)
@@ -467,13 +467,13 @@ end subroutine init_nonblock_type
          call mpp_error(FATAL,'mpp_check_field: input field is not on the data domain')
       field2(isd:ied, jsd:jed) = field_in(:,:)
     endif
-      
+
 !  broadcast domain
     call mpp_broadcast_domain(domain1)
     call mpp_broadcast_domain(domain2)
-    
+
     call mpp_redistribute(domain1,field_in,domain2,field1)
-    
+
     if(any(pelist2 == pe)) then
         do i =is,ie
         do j =js,je
@@ -488,14 +488,14 @@ end subroutine init_nonblock_type
         if(check_success) &
              print*, trim(mesg)//": ", 'comparison between ', size(pelist1(:)), ' pes and ', &
                    size(pelist2(:)), ' pe on', pe, ' pes is ok'
-    endif          
-                   
+    endif
+
     if(any(pelist2 == pe))    deallocate(field1, field2)
-    
+
     call mpp_sync()
-    
+
     return
-    
+
   end subroutine mpp_check_field_2d_type2
 
 
@@ -512,20 +512,20 @@ end subroutine init_nonblock_type
       logical :: native         !true if I'm on the pelist of this domain
       integer :: listsize, listpos
       integer :: n
-      integer, dimension(11) :: msg, info         !pe and compute domain of each item in list
-      integer                :: errunit      
+      integer, dimension(12) :: msg, info         !pe and compute domain of each item in list
+      integer                :: errunit
 
       errunit = stderr()
       if( .NOT.module_is_initialized ) &
-                 call mpp_error( FATAL, 'MPP_BROADCAST_DOMAIN_1: You must first call mpp_domains_init.' ) 
-      
+                 call mpp_error( FATAL, 'MPP_BROADCAST_DOMAIN_1: You must first call mpp_domains_init.' )
+
 !get the current pelist
       allocate( pes(0:mpp_npes()-1) )
       call mpp_get_current_pelist(pes)
-      
+
 !am I part of this domain?
       native = ASSOCIATED(domain%list)
-      
+
 !set local list size
       if( native )then
           listsize = size(domain%list(:))
@@ -533,7 +533,7 @@ end subroutine init_nonblock_type
           listsize = 0
       end if
       call mpp_max(listsize)
-      
+
       if( .NOT.native )then
 !initialize domain%list and set null values in message
           allocate( domain%list(0:listsize-1) )
@@ -571,12 +571,13 @@ end subroutine init_nonblock_type
       else
          info(11) = 0
       endif
+      info(12) = domain%ntiles
 !broadcast your info across current pelist and unpack if needed
       listpos = 0
       do n = 0,mpp_npes()-1
          msg = info
          if( mpp_pe().EQ.pes(n) .AND. debug )write( errunit,* )'PE ', mpp_pe(), 'broadcasting msg ', msg
-         call mpp_broadcast( msg, 11, pes(n) )
+         call mpp_broadcast( msg, 12, pes(n) )
 !no need to unpack message if native
 !no need to unpack message from non-native PE
          if( .NOT.native .AND. msg(1).NE.NULL_PE )then
@@ -600,16 +601,17 @@ end subroutine init_nonblock_type
                 else
                    domain%symmetry       = .false.
                 endif
+                domain%ntiles = msg(12)
              else
                 domain%x(1)%global%begin = min(domain%x(1)%global%begin, msg(2))
                 domain%x(1)%global%end   = max(domain%x(1)%global%end,   msg(3))
                 domain%y(1)%global%begin = min(domain%y(1)%global%begin, msg(4))
-                domain%y(1)%global%end   = max(domain%y(1)%global%end,   msg(5)) 
+                domain%y(1)%global%end   = max(domain%y(1)%global%end,   msg(5))
              endif
              listpos = listpos + 1
              if( debug )write( errunit,* )'PE ', mpp_pe(), 'received domain from PE ', msg(1), 'is,ie,js,je=', msg(2:5)
          end if
-      end do 
+      end do
 
     end subroutine mpp_broadcast_domain_1
 
@@ -733,6 +735,239 @@ end subroutine init_nonblock_type
 
     end subroutine mpp_broadcast_domain_2
 
+    subroutine mpp_broadcast_domain_nest_fine( domain, tile_nest )
+!broadcast domain (useful only outside the context of its own pelist)
+      type(domain2D), intent(inout) :: domain
+      integer,        intent(in)    :: tile_nest(:)
+      integer, allocatable :: pes(:)
+      logical :: native         !true if I'm on the pelist of this domain
+      integer :: listsize, listpos, nestsize(size(tile_nest(:)))
+      integer :: n, tile, ind, num_nest
+      integer, dimension(15) :: msg, info         !pe and compute domain of each item in list
+      integer                :: errunit
+
+      errunit = stderr()
+      if( .NOT.module_is_initialized ) &
+                 call mpp_error( FATAL, 'MPP_BROADCAST_DOMAIN_NEST_FINE: You must first call mpp_domains_init.' )
+
+!get the current pelist
+      allocate( pes(0:mpp_npes()-1) )
+      call mpp_get_current_pelist(pes)
+
+!am I part of this domain?
+      native = ASSOCIATED(domain%list)
+      num_nest = size(tile_nest(:))
+!set local list size
+      nestsize = 0
+      if( native )then
+          tile = domain%tile_id(1)
+          ind = 0
+          do n = 1, num_nest
+             if(tile_nest(n) == tile) then
+                ind = n
+                exit
+             endif
+          enddo
+          if(ind == 0) call mpp_error( FATAL, 'MPP_BROADCAST_DOMAIN_NEST_FINE:native is true, but tile_id is found in tile_nest')
+          nestsize(ind) = size(domain%list(:))
+      end if
+      call mpp_max(nestsize, num_nest)
+      listsize = sum(nestsize)
+
+      if( .NOT.native )then
+!initialize domain%list and set null values in message
+          allocate( domain%list(0:listsize-1) )
+          domain%pe = NULL_PE
+          domain%pos = -1
+          allocate(domain%x(1), domain%y(1), domain%tile_id(1))
+          do n = 0, listsize-1
+             allocate(domain%list(n)%x(1), domain%list(n)%y(1), domain%list(n)%tile_id(1) )
+          end do
+          domain%x%compute%begin =  0
+          domain%x%compute%end   = -1
+          domain%y%compute%begin =  0
+          domain%y%compute%end   = -1
+          domain%x%global %begin =  0
+          domain%x%global %end   = -1
+          domain%y%global %begin =  0
+          domain%y%global %end   = -1
+          domain%tile_id         = -1
+          domain%whalo           = -1
+          domain%ehalo           = -1
+          domain%shalo           = -1
+          domain%nhalo           = -1
+          domain%symmetry        = .false.
+      end if
+!initialize values in info
+      info(1) = domain%pe
+      call mpp_get_compute_domain( domain, info(2), info(3), info(4), info(5) )
+      info(6) = domain%tile_id(1)
+      info(7) = domain%whalo
+      info(8) = domain%ehalo
+      info(9) = domain%shalo
+      info(10)= domain%nhalo
+      if(domain%symmetry) then
+         info(11) = 1
+      else
+         info(11) = 0
+      endif
+      call mpp_get_global_domain( domain, info(12), info(13), info(14), info(15) )
+!broadcast your info across current pelist and unpack if needed
+      listpos = 0
+      do n = 0,mpp_npes()-1
+         msg = info
+         if( mpp_pe().EQ.pes(n) .AND. debug )write( errunit,* )'PE ', mpp_pe(), 'broadcasting msg ', msg
+         call mpp_broadcast( msg, 15, pes(n) )
+!no need to unpack message if native
+!no need to unpack message from non-native PE
+         if( .NOT.native .AND. msg(1).NE.NULL_PE )then
+             domain%list(listpos)%pe = msg(1)
+             if(domain%x(1)%compute%begin == 0) then
+                domain%whalo             = msg(7)
+                domain%ehalo             = msg(8)
+                domain%shalo             = msg(9)
+                domain%nhalo             = msg(10)
+                if(msg(11) == 1) then
+                   domain%symmetry       = .true.
+                else
+                   domain%symmetry       = .false.
+                endif
+             endif
+             domain%list(listpos)%x%compute%begin = msg(2)
+             domain%list(listpos)%x%compute%end   = msg(3)
+             domain%list(listpos)%y%compute%begin = msg(4)
+             domain%list(listpos)%y%compute%end   = msg(5)
+             domain%list(listpos)%tile_id(1)      = msg(6)
+             domain%list(listpos)%x%global%begin = msg(12)
+             domain%list(listpos)%x%global%end   = msg(13)
+             domain%list(listpos)%y%global%begin = msg(14)
+             domain%list(listpos)%y%global%end   = msg(15)
+             listpos = listpos + 1
+             if( debug )write( errunit,* )'PE ', mpp_pe(), 'received domain from PE ', msg(1), 'is,ie,js,je=', msg(2:5)
+         end if
+      end do
+
+    end subroutine mpp_broadcast_domain_nest_fine
+
+    subroutine mpp_broadcast_domain_nest_coarse( domain, tile_coarse )
+!broadcast domain (useful only outside the context of its own pelist)
+      type(domain2D), intent(inout) :: domain
+      integer,        intent(in)    :: tile_coarse
+      integer, allocatable :: pes(:)
+      logical :: native         !true if I'm on the pelist of this domain
+      integer :: listsize, listpos
+      integer, allocatable :: tile_pesize(:)
+      integer :: n, tile, maxtile
+      integer, dimension(17) :: msg, info         !pe and compute domain of each item in list
+      integer                :: errunit
+
+      errunit = stderr()
+      if( .NOT.module_is_initialized ) &
+                 call mpp_error( FATAL, 'MPP_BROADCAST_DOMAIN_NEST_COARSE: You must first call mpp_domains_init.' )
+
+!get the current pelist
+      allocate( pes(0:mpp_npes()-1) )
+      call mpp_get_current_pelist(pes)
+
+      maxtile = tile_coarse
+      call mpp_max(maxtile)
+      allocate(tile_pesize(maxtile))
+      tile_pesize = 0
+!am I part of this domain?
+      native = ASSOCIATED(domain%list)
+!set local list size
+      if( native )then
+!          tile = domain%tile_id(1)
+!          if(tile .NE. tile_coarse) then
+!             print*, "tile,tile_coarse=", tile, tile_coarse, mpp_pe()
+!             call mpp_error( FATAL, 'MPP_BROADCAST_DOMAIN_NEST_COARSE: tile .NE. tile_coarse')
+!          endif
+          tile_pesize(tile_coarse) = size(domain%list(:))
+      end if
+      call mpp_max(tile_pesize, maxtile)
+      listsize = tile_pesize(tile_coarse)
+
+      if( .NOT.native )then
+!initialize domain%list and set null values in message
+          allocate( domain%list(0:listsize-1) )
+          domain%pe = NULL_PE
+          domain%pos = -1
+          allocate(domain%x(1), domain%y(1), domain%tile_id(1))
+          do n = 0, listsize-1
+             allocate(domain%list(n)%x(1), domain%list(n)%y(1), domain%list(n)%tile_id(1) )
+          end do
+          domain%x%compute%begin =  0
+          domain%x%compute%end   = -1
+          domain%y%compute%begin =  0
+          domain%y%compute%end   = -1
+          domain%x%global %begin =  0
+          domain%x%global %end   = -1
+          domain%y%global %begin =  0
+          domain%y%global %end   = -1
+          domain%tile_id         = -1
+          domain%whalo           = -1
+          domain%ehalo           = -1
+          domain%shalo           = -1
+          domain%nhalo           = -1
+          domain%symmetry        = .false.
+          domain%ntiles          = 0
+      end if
+!initialize values in info
+      info(1) = domain%pe
+      call mpp_get_compute_domain( domain, info(2), info(3), info(4), info(5) )
+      info(6) = domain%tile_id(1)
+      info(7) = domain%whalo
+      info(8) = domain%ehalo
+      info(9) = domain%shalo
+      info(10)= domain%nhalo
+      if(domain%symmetry) then
+         info(11) = 1
+      else
+         info(11) = 0
+      endif
+      call mpp_get_global_domain( domain, info(12), info(13), info(14), info(15) )
+      info(16) = tile_coarse
+      info(17) = domain%ntiles
+!broadcast your info across current pelist and unpack if needed
+      listpos = 0
+      do n = 0,mpp_npes()-1
+         msg = info
+         call mpp_broadcast( msg, 17, pes(n) )
+!no need to unpack message if native
+!no need to unpack message from non-native PE
+         if( .NOT.native .AND. msg(1).NE.NULL_PE .AND. tile_coarse==msg(16) )then
+             domain%list(listpos)%pe = msg(1)
+             if(domain%x(1)%compute%begin == 0) then
+                domain%x(1)%global%begin = msg(12)
+                domain%x(1)%global%end   = msg(13)
+                domain%y(1)%global%begin = msg(14)
+                domain%y(1)%global%end   = msg(15)
+                domain%whalo             = msg(7)
+                domain%ehalo             = msg(8)
+                domain%shalo             = msg(9)
+                domain%nhalo             = msg(10)
+                domain%ntiles            = msg(17)
+                if(msg(11) == 1) then
+                   domain%symmetry       = .true.
+                else
+                   domain%symmetry       = .false.
+                endif
+             endif
+             domain%list(listpos)%x%compute%begin = msg(2)
+             domain%list(listpos)%x%compute%end   = msg(3)
+             domain%list(listpos)%y%compute%begin = msg(4)
+             domain%list(listpos)%y%compute%end   = msg(5)
+             domain%list(listpos)%tile_id(1)      = msg(6)
+             domain%list(listpos)%x%global%begin = msg(12)
+             domain%list(listpos)%x%global%end   = msg(13)
+             domain%list(listpos)%y%global%begin = msg(14)
+             domain%list(listpos)%y%global%end   = msg(15)
+             listpos = listpos + 1
+             if( debug )write( errunit,* )'PE ', mpp_pe(), 'received domain from PE ', msg(1), 'is,ie,js,je=', msg(2:5)
+         end if
+      end do
+
+    end subroutine mpp_broadcast_domain_nest_coarse
 
 
 !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
@@ -1293,17 +1528,28 @@ end subroutine init_nonblock_type
 #define MPP_UPDATE_NEST_FINE_3D_ mpp_update_nest_fine_r8_3D
 #undef MPP_UPDATE_NEST_FINE_4D_
 #define MPP_UPDATE_NEST_FINE_4D_ mpp_update_nest_fine_r8_4D
+#undef MPP_UPDATE_NEST_FINE_2D_V_
+#define MPP_UPDATE_NEST_FINE_2D_V_ mpp_update_nest_fine_r8_2Dv
+#undef MPP_UPDATE_NEST_FINE_3D_V_
+#define MPP_UPDATE_NEST_FINE_3D_V_ mpp_update_nest_fine_r8_3Dv
+#undef MPP_UPDATE_NEST_FINE_4D_V_
+#define MPP_UPDATE_NEST_FINE_4D_V_ mpp_update_nest_fine_r8_4Dv
 #undef MPP_UPDATE_NEST_COARSE_2D_
 #define MPP_UPDATE_NEST_COARSE_2D_ mpp_update_nest_coarse_r8_2D
 #undef MPP_UPDATE_NEST_COARSE_3D_
 #define MPP_UPDATE_NEST_COARSE_3D_ mpp_update_nest_coarse_r8_3D
 #undef MPP_UPDATE_NEST_COARSE_4D_
 #define MPP_UPDATE_NEST_COARSE_4D_ mpp_update_nest_coarse_r8_4D
+#undef MPP_UPDATE_NEST_COARSE_2D_V_
+#define MPP_UPDATE_NEST_COARSE_2D_V_ mpp_update_nest_coarse_r8_2Dv
+#undef MPP_UPDATE_NEST_COARSE_3D_V_
+#define MPP_UPDATE_NEST_COARSE_3D_V_ mpp_update_nest_coarse_r8_3Dv
+#undef MPP_UPDATE_NEST_COARSE_4D_V_
+#define MPP_UPDATE_NEST_COARSE_4D_V_ mpp_update_nest_coarse_r8_4Dv
 #include <mpp_update_nest_domains.h>
 
 #ifdef OVERLOAD_C8
 #undef VECTOR_FIELD_
-#define VECTOR_FIELD_
 #undef MPP_TYPE_
 #define MPP_TYPE_ complex(DOUBLE_KIND)
 #undef MPP_UPDATE_NEST_FINE_2D_
@@ -1323,7 +1569,6 @@ end subroutine init_nonblock_type
 
 #ifndef no_8byte_integers
 #undef VECTOR_FIELD_
-#define VECTOR_FIELD_
 #undef MPP_TYPE_
 #define MPP_TYPE_ integer(LONG_KIND)
 #undef MPP_UPDATE_NEST_FINE_2D_
@@ -1352,18 +1597,29 @@ end subroutine init_nonblock_type
 #define MPP_UPDATE_NEST_FINE_3D_ mpp_update_nest_fine_r4_3D
 #undef MPP_UPDATE_NEST_FINE_4D_
 #define MPP_UPDATE_NEST_FINE_4D_ mpp_update_nest_fine_r4_4D
+#undef MPP_UPDATE_NEST_FINE_2D_V_
+#define MPP_UPDATE_NEST_FINE_2D_V_ mpp_update_nest_fine_r4_2Dv
+#undef MPP_UPDATE_NEST_FINE_3D_V_
+#define MPP_UPDATE_NEST_FINE_3D_V_ mpp_update_nest_fine_r4_3Dv
+#undef MPP_UPDATE_NEST_FINE_4D_V_
+#define MPP_UPDATE_NEST_FINE_4D_V_ mpp_update_nest_fine_r4_4Dv
 #undef MPP_UPDATE_NEST_COARSE_2D_
 #define MPP_UPDATE_NEST_COARSE_2D_ mpp_update_nest_coarse_r4_2D
 #undef MPP_UPDATE_NEST_COARSE_3D_
 #define MPP_UPDATE_NEST_COARSE_3D_ mpp_update_nest_coarse_r4_3D
 #undef MPP_UPDATE_NEST_COARSE_4D_
 #define MPP_UPDATE_NEST_COARSE_4D_ mpp_update_nest_coarse_r4_4D
+#undef MPP_UPDATE_NEST_COARSE_2D_V_
+#define MPP_UPDATE_NEST_COARSE_2D_V_ mpp_update_nest_coarse_r4_2Dv
+#undef MPP_UPDATE_NEST_COARSE_3D_V_
+#define MPP_UPDATE_NEST_COARSE_3D_V_ mpp_update_nest_coarse_r4_3Dv
+#undef MPP_UPDATE_NEST_COARSE_4D_V_
+#define MPP_UPDATE_NEST_COARSE_4D_V_ mpp_update_nest_coarse_r4_4Dv
 #include <mpp_update_nest_domains.h>
 #endif
 
 #ifdef OVERLOAD_C4
 #undef VECTOR_FIELD_
-#define VECTOR_FIELD_
 #undef MPP_TYPE_
 #define MPP_TYPE_ complex(FLOAT_KIND)
 #undef MPP_UPDATE_NEST_FINE_2D_
@@ -1382,7 +1638,6 @@ end subroutine init_nonblock_type
 #endif
 
 #undef VECTOR_FIELD_
-#define VECTOR_FIELD_
 #undef MPP_TYPE_
 #define MPP_TYPE_ integer(INT_KIND)
 #undef MPP_UPDATE_NEST_FINE_2D_
@@ -1405,13 +1660,16 @@ end subroutine init_nonblock_type
 #define MPP_TYPE_ real(DOUBLE_KIND)
 #undef MPP_DO_UPDATE_NEST_FINE_3D_
 #define MPP_DO_UPDATE_NEST_FINE_3D_ mpp_do_update_nest_fine_r8_3D
+#undef MPP_DO_UPDATE_NEST_FINE_3D_V_
+#define MPP_DO_UPDATE_NEST_FINE_3D_V_ mpp_do_update_nest_fine_r8_3Dv
 #undef MPP_DO_UPDATE_NEST_COARSE_3D_
 #define MPP_DO_UPDATE_NEST_COARSE_3D_ mpp_do_update_nest_coarse_r8_3D
+#undef MPP_DO_UPDATE_NEST_COARSE_3D_V_
+#define MPP_DO_UPDATE_NEST_COARSE_3D_V_ mpp_do_update_nest_coarse_r8_3Dv
 #include <mpp_do_update_nest.h>
 
 #ifdef OVERLOAD_C8
 #undef VECTOR_FIELD_
-#define VECTOR_FIELD_
 #undef MPP_TYPE_
 #define MPP_TYPE_ complex(DOUBLE_KIND)
 #undef MPP_DO_UPDATE_NEST_FINE_3D_
@@ -1423,7 +1681,6 @@ end subroutine init_nonblock_type
 
 #ifndef no_8byte_integers
 #undef VECTOR_FIELD_
-#define VECTOR_FIELD_
 #undef MPP_TYPE_
 #define MPP_TYPE_ integer(LONG_KIND)
 #undef MPP_DO_UPDATE_NEST_FINE_3D_
@@ -1440,14 +1697,17 @@ end subroutine init_nonblock_type
 #define MPP_TYPE_ real(FLOAT_KIND)
 #undef MPP_DO_UPDATE_NEST_FINE_3D_
 #define MPP_DO_UPDATE_NEST_FINE_3D_ mpp_do_update_nest_fine_r4_3D
+#undef MPP_DO_UPDATE_NEST_FINE_3D_V_
+#define MPP_DO_UPDATE_NEST_FINE_3D_V_ mpp_do_update_nest_fine_r4_3Dv
 #undef MPP_DO_UPDATE_NEST_COARSE_3D_
 #define MPP_DO_UPDATE_NEST_COARSE_3D_ mpp_do_update_nest_coarse_r4_3D
+#undef MPP_DO_UPDATE_NEST_COARSE_3D_V_
+#define MPP_DO_UPDATE_NEST_COARSE_3D_V_ mpp_do_update_nest_coarse_r4_3Dv
 #include <mpp_do_update_nest.h>
 #endif
 
 #ifdef OVERLOAD_C4
 #undef VECTOR_FIELD_
-#define VECTOR_FIELD_
 #undef MPP_TYPE_
 #define MPP_TYPE_ complex(FLOAT_KIND)
 #undef MPP_DO_UPDATE_NEST_FINE_3D_
@@ -1458,7 +1718,6 @@ end subroutine init_nonblock_type
 #endif
 
 #undef VECTOR_FIELD_
-#define VECTOR_FIELD_
 #undef MPP_TYPE_
 #define MPP_TYPE_ integer(INT_KIND)
 #undef MPP_DO_UPDATE_NEST_FINE_3D_
@@ -1523,9 +1782,7 @@ end subroutine init_nonblock_type
 #include <mpp_update_domains2D_ad.h>
 #endif
 
-
-!!$
-!!$!*******************************************************
+!*******************************************************
 #undef VECTOR_FIELD_
 #define VECTOR_FIELD_
 #undef MPP_TYPE_
@@ -1608,7 +1865,7 @@ end subroutine init_nonblock_type
 !!$#define MPP_DO_UPDATE_AD_3D_ mpp_do_update_ad_c8_3d
 !!$#include <mpp_do_update_ad.h>
 !!$#endif
-!!$                                                                                  
+!!$
 !!$#ifndef no_8byte_integers
 !!$#undef MPP_TYPE_
 !!$#define MPP_TYPE_ integer(LONG_KIND)

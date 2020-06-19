@@ -1,4 +1,4 @@
-! -*-f90-*- 
+! -*-f90-*-
 
 
 !***********************************************************************
@@ -32,14 +32,14 @@
       MPP_TYPE_ :: field(update%xbegin:update%xend, update%ybegin:update%yend,ke)
       pointer(ptr_field, field)
       integer                     :: update_flags
-      type(overlap_type), pointer :: overPtr => NULL()      
+      type(overlap_type), pointer :: overPtr => NULL()
       character(len=8)            :: text
 
 !equate to mpp_domains_stack
       MPP_TYPE_ :: buffer(size(mpp_domains_stack(:)))
       pointer( ptr, buffer )
       integer :: buffer_pos
-     
+
 !receive domains saved here for unpacking
 !for non-blocking version, could be recomputed
       integer,    allocatable :: msg1(:), msg2(:), msg3(:)
@@ -128,8 +128,8 @@
                           //trim(domain%name)
          deallocate(msg1, msg2, msg3)
       endif
-   
-      !----------------------------------------------------------------------
+
+      !recv
       buffer_pos = 0
       do m = 1, update%nrecv
          overPtr => update%recv(m)
@@ -286,55 +286,55 @@
                tMe = overPtr%tileMe(n)
                is = overPtr%is(n); ie = overPtr%ie(n)
                js = overPtr%js(n); je = overPtr%je(n)
-               select case( overPtr%rotation(n) )
-               case(ZERO)
-                  do l=1,l_size  ! loop over number of fields
-                     ptr_field = f_addrs(l, tMe)
-                     do k = 1,ke  
-                        do j = js, je
-                           do i = is, ie
-                              pos = pos + 1
-                              field(i,j,k)=field(i,j,k) + buffer(pos)
-                           end do
-                        end do
-                     end do
-                  end do
-               case( MINUS_NINETY ) 
-                  do l=1,l_size  ! loop over number of fields
-                     ptr_field = f_addrs(l, tMe)
-                     do k = 1,ke  
-                        do i = is, ie
-                           do j = je, js, -1
-                              pos = pos + 1
-                              field(i,j,k)=field(i,j,k) + buffer(pos)
-                           end do
-                        end do
-                     end do
-                  end do
-               case( NINETY ) 
-                  do l=1,l_size  ! loop over number of fields
-                     ptr_field = f_addrs(l, tMe)
-                     do k = 1,ke  
-                        do i = ie, is, -1
+                  select case( overPtr%rotation(n) )
+                  case(ZERO)
+                     do l=1,l_size  ! loop over number of fields
+                        ptr_field = f_addrs(l, tMe)
+                        do k = 1,ke
                            do j = js, je
-                              pos = pos + 1
-                              field(i,j,k)=field(i,j,k) + buffer(pos)
+                              do i = is, ie
+                                 pos = pos + 1
+                                 field(i,j,k)=field(i,j,k)+buffer(pos)
+                              end do
                            end do
                         end do
                      end do
-                  end do
-               case( ONE_HUNDRED_EIGHTY ) 
-                  do l=1,l_size  ! loop over number of fields
-                     ptr_field = f_addrs(l, tMe)
-                     do k = 1,ke  
-                        do j = je, js, -1
+                  case( MINUS_NINETY )
+                     do l=1,l_size  ! loop over number of fields
+                        ptr_field = f_addrs(l, tMe)
+                        do k = 1,ke
+                           do i = is, ie
+                              do j = je, js, -1
+                                 pos = pos + 1
+                                 field(i,j,k)=field(i,j,k)+buffer(pos)
+                              end do
+                           end do
+                        end do
+                     end do
+                  case( NINETY )
+                     do l=1,l_size  ! loop over number of fields
+                        ptr_field = f_addrs(l, tMe)
+                        do k = 1,ke
                            do i = ie, is, -1
-                              pos = pos + 1
-                              field(i,j,k)=field(i,j,k) + buffer(pos)
+                              do j = js, je
+                                 pos = pos + 1
+                                 field(i,j,k)=field(i,j,k)+buffer(pos)
+                              end do
                            end do
                         end do
                      end do
-                  end do
+                  case( ONE_HUNDRED_EIGHTY )
+                     do l=1,l_size  ! loop over number of fields
+                        ptr_field = f_addrs(l, tMe)
+                        do k = 1,ke
+                           do j = je, js, -1
+                              do i = ie, is, -1
+                                 pos = pos + 1
+                                 field(i,j,k)=field(i,j,k)+buffer(pos)
+                              end do
+                           end do
+                        end do
+                     end do
                end select
             endif
          end do ! do n = 1, overPtr%count

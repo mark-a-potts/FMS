@@ -84,23 +84,23 @@ use time_manager_mod, only: time_type, operator(+), operator(>), &
 
 ! add by JHC
 use get_cal_time_mod, only: get_cal_time
-use mpp_io_mod, only : mpp_open, mpp_read, MPP_RDONLY, MPP_NETCDF, & 
-                       MPP_MULTI, MPP_SINGLE, mpp_close, mpp_get_times
+
 ! end add by JHC
 
 use  horiz_interp_mod, only: horiz_interp_init, horiz_interp,  &
                              horiz_interp_new, horiz_interp_del, &
                              horiz_interp_type, assignment(=)
 
-use           fms_mod, only: file_exist, error_mesg, write_version_number,  &
+use           fms_mod, only: error_mesg, write_version_number,  &
                              NOTE, WARNING, FATAL, stdlog, check_nml_error, &
-                             open_namelist_file, open_ieee32_file,          &
-                             mpp_pe, close_file, lowercase, mpp_root_pe,    &
+                             mpp_pe, lowercase, mpp_root_pe,    &
                              NOTE, mpp_error, fms_error_handler
-use        fms_io_mod, only: read_data, field_size ! add by JHC     
+
 use     constants_mod, only: TFREEZE, pi
 use      platform_mod, only: R4_KIND, I2_KIND
 use mpp_mod,           only: input_nml_file
+use fms2_io_mod,       only: FmsNetcdfFile_t, file_exists, open_file, close_file, &
+                             get_dimension_size, read_data
 
 implicit none
 private
@@ -160,13 +160,13 @@ end interface
 ! <INTERFACE NAME="amip_interp_new">
 !   <OVERVIEW>
 !     Function that initializes data needed for the horizontal
-!         interpolation between the sst grid and model grid. The 
+!         interpolation between the sst grid and model grid. The
 !         returned variable of type amip_interp_type is needed when
 !         calling get_amip_sst and get_amip_ice.
 !   </OVERVIEW>
 !   <DESCRIPTION>
 !      Function that initializes data needed for the horizontal
-!         interpolation between the sst grid and model grid. The 
+!         interpolation between the sst grid and model grid. The
 !         returned variable of type amip_interp_type is needed when
 !         calling get_amip_sst and get_amip_ice.
 !   </DESCRIPTION>
@@ -190,7 +190,7 @@ end interface
 !              then use_annual = true will be used.
 !   </IN>
 !   <IN NAME="interp_method">
-!     specify the horiz_interp scheme. = "conservative" means conservative scheme, 
+!     specify the horiz_interp scheme. = "conservative" means conservative scheme,
 !     = "bilinear" means  bilinear interpolation.
 !   </IN>
 !   <OUT NAME="Interp">
@@ -262,6 +262,7 @@ end type
    integer, parameter :: maxc = 128
    integer :: unit
    character(len=maxc) :: file_name_sst, file_name_ice
+   type(FmsNetcdfFile_t), target :: fileobj_sst, fileobj_ice
 
    type (date_type) :: Curr_date = date_type( -99, -99, -99 )
    type (date_type) :: Date_end  = date_type( -99, -99, -99 )
@@ -326,8 +327,8 @@ end type
 
 !   <DATA NAME="amip_date" TYPE="integer(3)" DEFAULT="/-1,-1,-1/">
 !     Single calendar date in integer "(year,month,day)" format
-!     that is used only if set with year>0, month>0, day>0. 
-!     If used, model calendar date is replaced by this date, 
+!     that is used only if set with year>0, month>0, day>0.
+!     If used, model calendar date is replaced by this date,
 !     but model time of day is still used to determine ice/sst.
 !     Used for repeating-single-day (rsd) experiments.
 !   </DATA>
@@ -343,12 +344,12 @@ end type
                                            !      'reynolds_eof'
                                            !      'reynolds_oi'
                                            !      'hurrell'
-                                           ! add by JHC:  
+                                           ! add by JHC:
                                            !      'daily', when "use_daily=.T."
 
  character(len=16) :: date_out_of_range = 'fail'  !  use 'fail'
                                                   !      'initclimo'
-                                                  !      'climo' 
+                                                  !      'climo'
 
  real    :: tice_crit    = -1.80       !  in degC or degK
  integer :: verbose      = 0           !  0 <= verbose <= 3
@@ -369,7 +370,7 @@ end type
 
 ! add by JHC
  character(len=6) :: sst_pert_type = 'fixed'  ! use 'random' or 'fixed'
- logical :: do_sst_pert = .false. 
+ logical :: do_sst_pert = .false.
  logical :: use_daily = .false. ! if '.true.', give 'data_set = 'daily''
 ! end add by JHC
 
@@ -400,7 +401,7 @@ contains
 !#######################################################################
 ! <SUBROUTINE NAME="get_amip_sst" INTERFACE="get_amip_sst">
 !   <IN NAME="Time" TYPE="time_type" ></IN>
-!   <OUT NAME="sst" TYPE="real" DIM="(:,:)"> </OUT>                  
+!   <OUT NAME="sst" TYPE="real" DIM="(:,:)"> </OUT>
 !   <INOUT NAME="Interp" TYPE="amip_interp_type"> </INOUT>
 ! </SUBROUTINE>
 
@@ -425,7 +426,7 @@ subroutine get_amip_sst (Time, Interp, sst, err_msg, lon_model, lat_model)
 ! add by JHC
     real,    intent(in), dimension(:,:), optional :: lon_model, lat_model
     real :: pert
-    integer :: i, j, mobs_sst, nobs_sst 
+    integer :: i, j, mobs_sst, nobs_sst
     integer :: jhctod(6)
     type (time_type) :: Udate
     character(len=4) :: yyyy
@@ -435,6 +436,7 @@ subroutine get_amip_sst (Time, Interp, sst, err_msg, lon_model, lat_model)
     character(len=30) :: time_unit
     real, dimension(:), allocatable :: timeval
     character(len=maxc) :: ncfilename
+    type(FmsNetcdfFile_t) :: fileobj
 ! end add by JHC
 
 
@@ -456,7 +458,7 @@ subroutine get_amip_sst (Time, Interp, sst, err_msg, lon_model, lat_model)
     endif
 
 ! add by JHC
-if ( .not.use_daily ) then 
+if ( .not.use_daily ) then
 ! end add by JHC
 
    if ( .not. allocated(temp1) ) allocate (temp1(mobs,nobs))
@@ -519,16 +521,6 @@ if ( .not.use_daily ) then
           Interp % Date2 = Date2
       endif
 
-!   ---- if the unit was opened, close it and print dates ----
-
-        if (unit /= -1) then
-           call close_file (unit)
-           if (verbose > 0 .and. mpp_pe() == 0)         &
-                                 call print_dates (Amip_Time,   &
-                                  Interp % Date1, Udate1,  &
-                                  Interp % Date2, Udate2, fmonth)
-        endif
-
 !-----------------------------------------------------------------------
 !---------- time interpolation (between months) of sst's ---------------
 !-----------------------------------------------------------------------
@@ -547,7 +539,7 @@ if ( .not.use_daily ) then
 
 !!! DEBUG CODE
 !          call get_date(Amip_Time,jhctod(1),jhctod(2),jhctod(3),jhctod(4),jhctod(5),jhctod(6))
-!          if (mpp_pe() == 0) then 
+!          if (mpp_pe() == 0) then
 !             write (*,200) 'JHC: use_daily = F, AMIP_Time: ',jhctod(1),jhctod(2),jhctod(3),jhctod(4),jhctod(5),jhctod(6)
 !             write (*,300) 'JHC: use_daily = F, interped SST: ', sst(1,1),sst(5,5),sst(10,10)
 !          endif
@@ -559,42 +551,41 @@ if ( .not.use_daily ) then
 ! add by JHC
 else
     call get_date(Amip_Time,jhctod(1),jhctod(2),jhctod(3),jhctod(4),jhctod(5),jhctod(6))
-     if (mpp_pe() == mpp_root_pe()) write(*,200) 'amip_interp_mod: use_daily = T, Amip_Time = ',jhctod(1),jhctod(2),jhctod(3),jhctod(4),jhctod(5),jhctod(6) 
- 
+     if (mpp_pe() == mpp_root_pe()) write(*,200) 'amip_interp_mod: use_daily = T, Amip_Time = ',jhctod(1),jhctod(2),jhctod(3),jhctod(4),jhctod(5),jhctod(6)
+
     yr = jhctod(1); mo = jhctod(2); dy = jhctod(3)
-   
+
     write (yyyy,'(i4)') jhctod(1)
 
     file_name_sst = 'INPUT/' // 'sst.day.mean.'//yyyy//'.v2.nc'
     ncfilename = trim(file_name_sst)
     time_unit = 'days since 1978-01-01 00:00:00'
 
-    mobs_sst = 1440;  nobs_sst = 720 
- 
+    mobs_sst = 1440;  nobs_sst = 720
+
     call set_sst_grid_edges_daily(mobs_sst, nobs_sst)
     call horiz_interp_new ( Interp%Hintrp2, lon_bnd, lat_bnd, &
                              lon_model, lat_model, interp_method="bilinear" )
 
 
-    if ( (.NOT. file_exist(ncfilename))  ) call mpp_error ('amip_interp_mod', &
+    if ( (.NOT. file_exists(ncfilename))  ) call mpp_error ('amip_interp_mod', &
              'cannot find daily SST input data file: '//trim(ncfilename), NOTE)
 
-    if (file_exist(ncfilename)) then
+    if (file_exists(ncfilename)) then
         if (mpp_pe() == mpp_root_pe()) call mpp_error ('amip_interp_mod', &
              'Reading NetCDF formatted daily SST from: '//trim(ncfilename), NOTE)
 
-        call field_size(ncfilename, 'TIME', siz)
-        nrecords = siz (1)
+        if(.not. open_file(fileobj, trim(ncfilename), 'read')) &
+             call error_mesg ('get_amip_sst', 'Error in opening file '//trim(ncfilename), FATAL)
+
+        call get_dimension_size(fileobj, 'TIME', nrecords)
         if (nrecords < 1) call mpp_error('amip_interp_mod', &
                            'Invalid number of SST records in daily SST data file: '//trim(ncfilename), FATAL)
         allocate(timeval(nrecords), ryr(nrecords), rmo(nrecords), rdy(nrecords))
-
-        call mpp_open( unit, ncfilename, MPP_RDONLY, MPP_NETCDF, MPP_MULTI, MPP_SINGLE )
-        call mpp_get_times(unit, timeval)
-        call mpp_close(unit)
+        call read_data(fileobj, 'TIME', timeval)
 
 !!! DEBUG CODE
-!          if (mpp_pe() == 0) then 
+!          if (mpp_pe() == 0) then
 !             print *, 'JHC: nrecords = ', nrecords
 !             print *, 'JHC: TIME = ', timeval
 !          endif
@@ -612,26 +603,27 @@ else
 
         enddo
 !!! DEBUG CODE
-             if (mpp_pe() == 0) then 
-             print *, 'JHC: k =', k 
-             print *, 'JHC: ryr(k) rmo(k) rdy(k)',ryr(k), rmo(k), rdy(k) 
-             print *, 'JHC:  yr     mo     dy   ',yr, mo, dy 
+             if (mpp_pe() == 0) then
+             print *, 'JHC: k =', k
+             print *, 'JHC: ryr(k) rmo(k) rdy(k)',ryr(k), rmo(k), rdy(k)
+             print *, 'JHC:  yr     mo     dy   ',yr, mo, dy
           endif
 !!! END DEBUG CODE
         if (ierr .ne. 0) call mpp_error('amip_interp_mod', &
                          'Model time is out of range not in SST data: '//trim(ncfilename), FATAL)
     endif ! if(file_exist(ncfilename))
-     
+
 
    !---- read NETCDF data ----
      if ( .not. allocated(tempamip) ) allocate (tempamip(mobs_sst,nobs_sst))
 
-     if (file_exist(ncfilename)) then
-          call read_data(ncfilename, 'SST', tempamip, timelevel=k, no_domain=.true.)
+     if (file_exists(ncfilename)) then
+          call read_data(fileobj, 'SST', tempamip, unlim_dim_level=k)
+          call close_file(fileobj)
           tempamip = tempamip + TFREEZE
 
 !!! DEBUG CODE
-!          if (mpp_pe() == 0) then 
+!          if (mpp_pe() == 0) then
 !             print*, 'JHC: TFREEZE = ', TFREEZE
 !             print*, lbound(sst)
 !             print*, ubound(sst)
@@ -644,10 +636,10 @@ else
           call horiz_interp ( Interp%Hintrp2, tempamip, sst )
           call clip_data ('sst', sst)
 
-     endif 
+     endif
 
 !!! DEBUG CODE
-!          if (mpp_pe() == 400) then 
+!          if (mpp_pe() == 400) then
 !             write(*,300)'JHC: use_daily = T, daily SST: ', sst(1,1),sst(5,5),sst(10,10)
 !             print *,'JHC: use_daily = T, daily SST: ', sst
 !          endif
@@ -663,15 +655,15 @@ endif
 !             This perturbation may be useful in accessing model sensitivities
 
  if ( do_sst_pert ) then
-      
+
       if ( trim(sst_pert_type) == 'fixed' ) then
           sst = sst + sst_pert
       else if ( trim(sst_pert_type) == 'random' ) then
           call random_seed()
 !!! DEBUG CODE
-!    	  if (mpp_pe() == 0) then
-!             print*, 'mobs = ', mobs	
-!             print*, 'nobs = ', nobs	
+!       if (mpp_pe() == 0) then
+!             print*, 'mobs = ', mobs
+!             print*, 'nobs = ', nobs
 !             print*, lbound(sst)
 !             print*, ubound(sst)
 !          endif
@@ -686,7 +678,7 @@ endif
 
   endif
 ! end add by JHC
-   
+
 !-----------------------------------------------------------------------
 
  end subroutine get_amip_sst
@@ -695,7 +687,7 @@ endif
 !#######################################################################
 ! <SUBROUTINE NAME="get_amip_ice" INTERFACE="get_amip_ice">
 !   <IN NAME="Time"  TYPE="time_type"  > </IN>
-!   <OUT NAME="ice" TYPE="real" DIM="(:,:)"> </OUT>                  
+!   <OUT NAME="ice" TYPE="real" DIM="(:,:)"> </OUT>
 !   <INOUT NAME="Interp" TYPE="amip_interp_type"> </INOUT>
 ! </SUBROUTINE>
 
@@ -733,9 +725,9 @@ subroutine get_amip_ice (Time, Interp, ice, err_msg)
     else
 
        Amip_Time = Time
-       
+
     endif
-       
+
 
 if (use_zonal) then
    call zonal_sst (Amip_Time, sice, temp)
@@ -748,7 +740,7 @@ else
 ! ---- time interpolation for months -----
 
    call time_interp (Amip_Time, fmonth, year1, year2, month1, month2)
-   
+
 ! ---- force climatology ----
    if (Interp % use_climo) then
        year1=0; year2=0
@@ -810,16 +802,6 @@ else
         Interp % Date2 = Date2
 
     endif
-
-!   ---- if the unit was opened, close it and print dates ----
-
-      if (unit /= -1) then
-         call close_file (unit)
-         if (verbose > 0 .and. mpp_pe() == 0)         &
-                               call print_dates (Amip_Time,   &
-                                Interp % Date1, Udate1,  &
-                                Interp % Date2, Udate2, fmonth)
-      endif
 
 !-----------------------------------------------------------------------
 !---------- time interpolation (between months) ------------------------
@@ -930,7 +912,7 @@ endif
                            lon, lat, interp_method = interp_method)
 
    allocate ( Interp % data1 (size(lon,1),size(lat,2)), &
-              Interp % data2 (size(lon,1),size(lat,2))) 
+              Interp % data2 (size(lon,1),size(lat,2)))
 
    Interp%I_am_initialized = .true.
 
@@ -949,19 +931,8 @@ endif
 
 !   ---- read namelist ----
 
-#ifdef INTERNAL_FILE_NML
     read (input_nml_file, amip_interp_nml, iostat=io)
     ierr = check_nml_error(io,'amip_interp_nml')
-#else
-    if ( file_exist('input.nml')) then
-       unit = open_namelist_file( )
-       ierr=1; do while (ierr /= 0)
-       read  (unit, nml=amip_interp_nml, iostat=io, end=10)
-       ierr = check_nml_error(io,'amip_interp_nml')
-       enddo
-  10   call close_file (unit)
-    endif
-#endif
 
 !  ----- write namelist/version info -----
     call write_version_number("AMIP_INTERP_MOD", version)
@@ -970,7 +941,6 @@ endif
     if (mpp_pe() == 0) then
         write (unit,nml=amip_interp_nml)
     endif
-    call close_file (unit)
 
     if ( .not. use_ncep_sst ) interp_oi_sst = .false.
 
@@ -1017,7 +987,7 @@ endif
     else if (lowercase(trim(data_set)) == 'daily') then
         file_name_sst = 'INPUT/' // 'hurrell_sst.data'
         file_name_ice = 'INPUT/' // 'hurrell_ice.data'
-        mobs = 360;  nobs = 180 
+        mobs = 360;  nobs = 180
         call set_sst_grid_edges_oi
         if (mpp_pe() == 0) &
         call error_mesg ('amip_interp_init', 'using AVHRR daily sst', NOTE)
@@ -1035,7 +1005,7 @@ endif
     else if (lowercase(trim(data_set)) == 'reynolds_oi') then
         file_name_sst = 'INPUT/' // 'reyoi_sst.data'
         file_name_ice = 'INPUT/' // 'reyoi_sst.data'
-!--- Added by SJL ---------------------------------------------- 
+!--- Added by SJL ----------------------------------------------
         if ( use_ncep_sst ) then
              mobs = i_sst;  nobs = j_sst
             if (.not. allocated (sst_ncep)) then
@@ -1049,7 +1019,7 @@ endif
         else
              mobs = 360;    nobs = 180
         endif
-!--- Added by SJL ---------------------------------------------- 
+!--- Added by SJL ----------------------------------------------
         call set_sst_grid_edges_oi
         if (mpp_pe() == 0) &
         call error_mesg ('amip_interp_init', 'using Reynolds OI SST', &
@@ -1064,15 +1034,22 @@ endif
               print *, 'ice_crit,tice_crit_k=',ice_crit,tice_crit_k
 
 !  --- check existence of sst data file ??? ---
+    file_name_sst = trim(file_name_sst)//'.nc'
+    file_name_ice = trim(file_name_ice)//'.nc'
 
-    if (.not.file_exist(trim(file_name_sst)) .and. .not.file_exist(trim(file_name_sst)//'.nc')) then
+    if (.not.file_exists(trim(file_name_sst)) ) then
       call error_mesg ('amip_interp_init', &
-            'Neither '//trim(file_name_sst)//' or '//trim(file_name_sst)//'.nc exists', FATAL)
+            'file '//trim(file_name_sst)//' does not exist', FATAL)
     endif
-    if (.not.file_exist(trim(file_name_ice)) .and. .not.file_exist(trim(file_name_ice)//'.nc')) then
+    if (.not.file_exists(trim(file_name_ice)) ) then
       call error_mesg ('amip_interp_init', &
-            'Neither '//trim(file_name_ice)//' or '//trim(file_name_ice)//'.nc exists', FATAL)
+            'file '//trim(file_name_ice)//' does not exist', FATAL)
     endif
+
+    if(.not. open_file(fileobj_sst, trim(file_name_sst), 'read')) &
+             call error_mesg ('amip_interp_init', 'Error in opening file '//trim(file_name_sst), FATAL)
+    if(.not. open_file(fileobj_ice, trim(file_name_ice), 'read')) &
+             call error_mesg ('amip_interp_init', 'Error in opening file '//trim(file_name_ice), FATAL)
 
     module_is_initialized = .true.
 
@@ -1419,39 +1396,20 @@ endif
      integer, dimension(:), allocatable :: ryr, rmo, rdy
      character(len=38)   :: mesg
      character(len=maxc) :: ncfilename, ncfieldname
+     type(FmsNetcdfFile_t), pointer :: fileobj
 
     !---- set file and field name for NETCDF data sets ----
 
         ncfieldname = 'sst'
      if(type(1:3) == 'sst') then
-        ncfilename = trim(file_name_sst)//'.nc'
+        ncfilename = trim(file_name_sst)
+        fileobj => fileobj_sst
      else if(type(1:3) == 'ice') then
-        ncfilename = trim(file_name_ice)//'.nc'
+        ncfilename = trim(file_name_ice)
+        fileobj => fileobj_ice
         if (lowercase(trim(data_set)) == 'amip2' .or. &
-            lowercase(trim(data_set)) == 'hurrell' .or. & 
+            lowercase(trim(data_set)) == 'hurrell' .or. &
             lowercase(trim(data_set)) == 'daily') ncfieldname = 'ice' ! modified by JHC
-     endif
-
-    !---- make sure IEEE format file is open ----
-
-     if ( (.NOT. file_exist(ncfilename))  ) then
-
-       ! rewind condition (if unit is open)
-        if (unit /= -1 .and. Curr_date % year == 0 .and.   &
-             date % month <= Curr_date % month ) then
-           if (verbose > 1 .and. mpp_pe() == 0)  &
-                print *, ' rewinding unit = ', unit
-           rewind unit
-        endif
-
-        if (unit == -1) then
-           if (type(1:3) == 'sst') then
-              unit = open_ieee32_file (file_name_sst, 'read')
-           else if (type(1:3) == 'ice') then
-              unit = open_ieee32_file (file_name_ice, 'read')
-           endif
-        endif
-
      endif
 
      dy = 0 ! only processing monthly data
@@ -1459,72 +1417,32 @@ endif
      if (verbose > 2 .and. mpp_pe() == 0)  &
           print *, 'looking for date = ', Date
 
-    !---- check dates in NETCDF file -----
-
      ! This code can handle amip1, reynolds, or reyoi type SST data files in netCDF format
-     if (file_exist(ncfilename)) then
-        if (mpp_pe() == mpp_root_pe()) call mpp_error ('amip_interp_mod', &
-             'Reading NetCDF formatted input data file: '//trim(ncfilename), NOTE)
-        call read_data (ncfilename, 'nrecords', nrecords, no_domain=.true.)
-        if (nrecords < 1) call mpp_error('amip_interp_mod', &
+     if (mpp_pe() == mpp_root_pe()) call mpp_error ('amip_interp_mod', &
+          'Reading NetCDF formatted input data file: '//trim(ncfilename), NOTE)
+     call read_data (fileobj, 'nrecords', nrecords)
+     if (nrecords < 1) call mpp_error('amip_interp_mod', &
                            'Invalid number of SST records in SST datafile: '//trim(ncfilename), FATAL)
-        allocate(ryr(nrecords), rmo(nrecords), rdy(nrecords))
-        call read_data(ncfilename, 'yr', ryr, no_domain=.true.)
-        call read_data(ncfilename, 'mo', rmo, no_domain=.true.)
-        call read_data(ncfilename, 'dy', rdy, no_domain=.true.)
-        ierr = 1
-        do k = 1, nrecords
-          yr = ryr(k);  mo = rmo(k)
-          Adate = date_type( yr, mo, 0)
-          Curr_date = Adate
-          if (verbose > 2 .and. mpp_pe() == 0)  &
-                print *, '....... checking   ', Adate
-          if (Date == Adate) ierr = 0 
-          if (yr == 0 .and. mo == Date%month) ierr = 0
-          if (ierr == 0) exit
-        enddo
-        if (ierr .ne. 0) call mpp_error('amip_interp_mod', &
-                         'Model time is out of range not in SST data: '//trim(ncfilename), FATAL)
+     allocate(ryr(nrecords), rmo(nrecords), rdy(nrecords))
+     call read_data(fileobj, 'yr', ryr)
+     call read_data(fileobj, 'mo', rmo)
+     call read_data(fileobj, 'dy', rdy)
+     ierr = 1
+     do k = 1, nrecords
+       yr = ryr(k);  mo = rmo(k)
+       Adate = date_type( yr, mo, 0)
+       Curr_date = Adate
+       if (verbose > 2 .and. mpp_pe() == 0)  &
+             print *, '....... checking   ', Adate
+       if (Date == Adate) ierr = 0
+       if (yr == 0 .and. mo == Date%month) ierr = 0
+       if (ierr == 0) exit
+     enddo
+     if (ierr .ne. 0) call mpp_error('amip_interp_mod', &
+                      'Model time is out of range not in SST data: '//trim(ncfilename), FATAL)
         deallocate(ryr, rmo, rdy)
        !PRINT *, 'New SST data: ', k, yr, mo, dy, Date%year, Date%month, Date%day, ryr(1), rmo(1)
 
-    !---- check dates in IEEE file -----
-
-     else
-        if (mpp_pe() == mpp_root_pe()) call mpp_error ('amip_interp_mod', &
-             'Reading native formatted input data file: '//trim(data_set), NOTE)
-        k = 0
-        do
-           k = k + 1
-           if (lowercase(trim(data_set)) == 'amip2' .or. lowercase(trim(data_set)) == 'hurrell') then
-              read (unit, end=10)  yr, mo,     dat4
-              dat=dat4
-           else
-              read (unit, end=10)  yr, mo, dy, idat
-           endif
-           !new     read (unit, end=10)  yr, mo, dy
-           Adate = date_type( yr, mo, dy )
-           Curr_date = Adate
-           if (verbose > 2 .and. mpp_pe() == 0)  &
-                print *, '....... checking   ', Adate
-           
-           !     --- found date ---
-           if (Date == Adate)                    exit
-           if (Date%month == mo .and. Date%day == dy .and. Date%year == yr ) exit
-           !     --- otherwise use monthly climo ---
-           if (yr == 0 .and. Date % month == mo) exit
-           
-           !     --- skip this data record ---
-           !new  if (lowercase(trim(data_set)) /= 'amip2') read (unit)
-        enddo
-        
-        !     --- read data ---
-        !new  if (lowercase(trim(data_set)) /= 'amip2') read (unit) idat
-        
-        !   --- check if climo used when not wanted ---
-        
-     endif ! if(file_exist(ncfilename))
-     
    !---- check if climatological data should be used ----
 
      if (yr == 0 .or. mo == 0) then
@@ -1539,20 +1457,18 @@ endif
 
    !---- read NETCDF data ----
 
-     if (file_exist(ncfilename)) then
-         if ( interp_oi_sst ) then
-              call read_data(ncfilename, ncfieldname, tmp_dat, timelevel=k, no_domain=.true.)
+     if ( interp_oi_sst ) then
+          call read_data(fileobj, ncfieldname, tmp_dat, unlim_dim_level=k)
 !     interpolate tmp_dat(360, 180) ---> dat(mobs,nobs) (to enable SST anom computation)
-              if ( mobs/=360 .or. nobs/=180 ) then
-                   call a2a_bilinear(360, 180, tmp_dat, mobs, nobs, dat)
-              else
-                   dat(:,:) = tmp_dat(:,:)
-              endif
-         else
-              call read_data(ncfilename, ncfieldname, dat, timelevel=k, no_domain=.true.)
-         endif
-        idat =  nint(dat*100.) ! reconstruct packed data for reproducibity
+          if ( mobs/=360 .or. nobs/=180 ) then
+               call a2a_bilinear(360, 180, tmp_dat, mobs, nobs, dat)
+          else
+               dat(:,:) = tmp_dat(:,:)
+          endif
+     else
+          call read_data(fileobj, ncfieldname, dat, unlim_dim_level=k)
      endif
+     idat =  nint(dat) ! reconstruct packed data for reproducibity
 
    !---- unpacking of data ----
 
@@ -1608,7 +1524,7 @@ logical :: answer
    if (Left % year  == Right % year  .and.  &
        Left % month == Right % month .and.  &
        Left % day   == Right % day ) then
-           answer = .true. 
+           answer = .true.
    else
            answer = .false.
    endif
@@ -1626,7 +1542,7 @@ logical :: answer
        Left % day   == Right % day ) then
            answer = .false.
    else
-           answer = .true. 
+           answer = .true.
    endif
 
 end function date_not_equals
@@ -1677,7 +1593,7 @@ subroutine print_dates (Time, Date1, Udate1,  &
                     'used = ',i4,2('/',i2.2),6x  )
 40 format (' date2(y/m/d) = ',i4,2('/',i2.2),6x, &
                     'used = ',i4,2('/',i2.2),6x  )
-     
+
 end subroutine print_dates
 
 !#######################################################################
@@ -1754,7 +1670,7 @@ end subroutine amip_interp_type_eq
 end module amip_interp_mod
 ! <INFO>
 
-!   <FUTURE> 
+!   <FUTURE>
 !     Add AMIP 2 data set.
 !
 !     Other data sets (or extend current data sets).

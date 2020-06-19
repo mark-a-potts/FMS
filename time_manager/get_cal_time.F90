@@ -48,7 +48,7 @@ logical :: module_is_initialized=.false. ! This module is initialized on
 ! <DATA NAME="allow_calendar_conversion" TYPE="logical"  DEFAULT=".true.">
 !   This sets the default value of the optional argument named "permit_calendar_conversion" of get_cal_time.
 !   This namelist is deprecated as of the memphis release.
-!   If calendar conversion is not desired, then it is recommended that permit_calendar_conversion 
+!   If calendar conversion is not desired, then it is recommended that permit_calendar_conversion
 !   be present in the call to get_cal_time and that it be set to .false.
 ! </DATA>
 
@@ -87,7 +87,7 @@ contains
 !
 ! Because months are not equal increments of time, and, for julian calendar,
 ! neither are years, the 'years since' and 'month since' cases deserve
-! further explaination. 
+! further explaination.
 !
 ! When 'years since' is used:
 ! The year number is increased by floor(time_increment)   to obtain a time T1.
@@ -161,7 +161,7 @@ contains
 ! Note: this option was originally coded to allow noleap calendar as input when
 ! the julian calendar was in effect by the time_manager.
 ! </IN>
-! 
+!
 !---------------------------------------------------------------------------------------------
 
 function get_cal_time(time_increment, units, calendar, permit_calendar_conversion)
@@ -211,6 +211,7 @@ endif
 calendar_in_c = lowercase(trim(cut0(calendar)))
 
 correct_form = (trim(calendar_in_c)) == 'noleap'     .or. (trim(calendar_in_c)) == '365_day' .or. &
+               (trim(calendar_in_c)) == '365_days' .or. &
                (trim(calendar_in_c)) == '360_day'    .or. (trim(calendar_in_c)) == 'julian'  .or. &
                (trim(calendar_in_c)) == 'no_calendar'.or. (trim(calendar_in_c)) == 'thirty_day_months' .or. &
                (trim(calendar_in_c)) == 'gregorian'
@@ -218,7 +219,7 @@ correct_form = (trim(calendar_in_c)) == 'noleap'     .or. (trim(calendar_in_c)) 
 if(.not.correct_form) then
   call error_mesg('get_cal_time','"'//trim(calendar_in_c)//'"'// &
    ' is not an acceptable calendar attribute. acceptable calendars are: '// &
-   ' noleap, 365_day, 360_day, julian, no_calendar, thirty_day_months, gregorian',FATAL)
+   ' noleap, 365_day, 365_days, 360_day, julian, no_calendar, thirty_day_months, gregorian',FATAL)
 endif
 
 calendar_tm_i = get_calendar_type()
@@ -226,6 +227,7 @@ calendar_tm_i = get_calendar_type()
 if(.not.permit_conversion_local) then
   correct_form = (trim(calendar_in_c) == 'noleap'            .and. calendar_tm_i == NOLEAP)            .or. &
                  (trim(calendar_in_c) == '365_day'           .and. calendar_tm_i == NOLEAP)            .or. &
+                 (trim(calendar_in_c) == '365_days'          .and. calendar_tm_i == NOLEAP)            .or. &
                  (trim(calendar_in_c) == '360_day'           .and. calendar_tm_i == THIRTY_DAY_MONTHS) .or. &
                  (trim(calendar_in_c) == 'thirty_day_months' .and. calendar_tm_i == THIRTY_DAY_MONTHS) .or. &
                  (trim(calendar_in_c) == 'julian'            .and. calendar_tm_i == JULIAN)            .or. &
@@ -242,6 +244,8 @@ if (permit_conversion_local) then
     case ('noleap')
         calendar_in_i = NOLEAP
     case ('365_day')
+        calendar_in_i = NOLEAP
+    case ('365_days')
         calendar_in_i = NOLEAP
     case ('360_day')
         calendar_in_i = THIRTY_DAY_MONTHS
@@ -289,7 +293,7 @@ endif
 ! Returns the starting position of substring as a substring of string,
 ! or zero if it does not occur as a substring. Default value of back is
 ! .false. If back is .false., the starting position of the first such
-! substring is returned. If back is .true., the starting position of the 
+! substring is returned. If back is .true., the starting position of the
 ! last such substring is returned.
 ! Returns zero if substring is not a substring of string (regardless of value of back)
 
@@ -302,7 +306,7 @@ endif
 
 if(lowercase(units(1:10)) == 'days since') then
   increment_days = floor(time_increment)
-  increment_seconds = 86400*(time_increment - increment_days) 
+  increment_seconds = 86400*(time_increment - increment_days)
 else if(lowercase(units(1:11)) == 'hours since') then
   increment_days = floor(time_increment/24)
   increment_seconds = 86400*(time_increment/24 - increment_days)

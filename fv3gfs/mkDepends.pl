@@ -1,5 +1,24 @@
 #!/usr/bin/env perl
 
+#***********************************************************************
+#*                   GNU Lesser General Public License
+#*
+#* This file is part of the GFDL Flexible Modeling System (FMS).
+#*
+#* FMS is free software: you can redistribute it and/or modify it under
+#* the terms of the GNU Lesser General Public License as published by
+#* the Free Software Foundation, either version 3 of the License, or (at
+#* your option) any later version.
+#*
+#* FMS is distributed in the hope that it will be useful, but WITHOUT
+#* ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or
+#* FITNESS FOR A PARTICULAR PURPOSE.  See the GNU General Public License
+#* for more details.
+#*
+#* You should have received a copy of the GNU Lesser General Public
+#* License along with FMS.  If not, see <http://www.gnu.org/licenses/>.
+#***********************************************************************
+
 # Modifications to Brian Eaton's original to relax the restrictions on
 # source file name matching module name and only one module per source
 # file.  See the new "-m" and "-d" options for details.
@@ -140,8 +159,8 @@ foreach $f ( @src ) {
 
     # Find the file in the seach path (@file_paths).
     unless ($file_path = find_file($f)) {
-	if (defined $opt{'w'}) {print STDERR "$f not found\n";}
-	next;
+      if (defined $opt{'w'}) {print STDERR "$f not found\n";}
+      next;
     }
 
     # Find the module and include dependencies.
@@ -175,8 +194,8 @@ while (@check_includes) {
 
     # Mark files not in path so they can be removed from the dependency list.
     unless ($file_path = find_file($f)) {
-	$include_depends{$f} = -1;
-	next;
+      $include_depends{$f} = -1;
+      next;
     }
 
     # Find include file dependencies.
@@ -205,11 +224,11 @@ foreach $f (keys %include_depends) {
     $ii = 0;
     $num_incs = @$rincs;
     for ($i = 0; $i < $num_incs; ++$i) {
-    	if ($include_depends{$$rincs[$ii]} == -1) {
-	    splice @$rincs, $ii, 1;
-	    next;
-	}
-    ++$ii;
+       if ($include_depends{$$rincs[$ii]} == -1) {
+         splice @$rincs, $ii, 1;
+         next;
+       }
+       ++$ii;
     }
 }
 
@@ -221,16 +240,16 @@ foreach $f (keys %file_includes) {
     my $i;
     unless (@{$file_includes{$f}}) { next; }
     foreach $i (@{$file_includes{$f}}) {
-	push @expand_incs, $i  unless ($include_depends{$i} == -1);
+       push @expand_incs, $i  unless ($include_depends{$i} == -1);
     }
     unless (@expand_incs) {
-	$file_includes{$f} = [];
-	next;
+       $file_includes{$f} = [];
+       next;
     }
 
     # Expand
     for ($i = 0; $i <= $#expand_incs; ++$i) {
-	push @expand_incs, @{ $include_depends{$expand_incs[$i]} };
+       push @expand_incs, @{ $include_depends{$expand_incs[$i]} };
     }
 
     $file_includes{$f} = rm_duplicates(\@expand_incs);
@@ -274,23 +293,23 @@ sub find_dependencies {
     open(FH, $file)  or die "Can't open $file: $!\n";
 
     while ( <FH> ) {
-	# Search for "#include" and strip filename when found.
-	if ( /^#include\s+[<"](.*)[>"]/ ) {
-	     push @incs, $1;
-	 }
-	# Search for module dependencies.
-	elsif ( /^\s*USE\s+(\w+)/i ) {
-	    # Return dependency in the form of a .o version of the file that contains
-	    # the module.
-	    ($module = $1) =~ tr/a-z/A-Z/;
-	    if ( defined $module_files{$module} ) {
-	        if ( defined $obj_dir ) {
-		    push @mods, "$obj_dir/$module_files{$module}.o";
-	        } else {
-	            push @mods, "$module_files{$module}.o";
-	        }
-	    }
-	}
+       # Search for "#include" and strip filename when found.
+       if ( /^#include\s+[<"](.*)[>"]/ ) {
+          push @incs, $1;
+       }
+       # Search for module dependencies.
+       elsif ( /^\s*USE\s+(\w+)/i ) {
+          # Return dependency in the form of a .o version of the file that contains
+          # the module.
+          ($module = $1) =~ tr/a-z/A-Z/;
+          if ( defined $module_files{$module} ) {
+             if ( defined $obj_dir ) {
+                push @mods, "$obj_dir/$module_files{$module}.o";
+             } else {
+                push @mods, "$module_files{$module}.o";
+             }
+          }
+       }
     }
     close( FH );
     return (\@mods, \@incs);
@@ -308,8 +327,8 @@ sub find_file {
     my($dir, $fname);
 
     foreach $dir (@file_paths) {
-	$fname = "$dir/$file";
-	if ( -f  $fname ) { return $fname; }
+       $fname = "$dir/$file";
+       if ( -f  $fname ) { return $fname; }
     }
     return '';  # file not found
 }
@@ -325,7 +344,7 @@ sub rm_duplicates {
     my $i;
     my %h = ();
     foreach $i (@$in) {
-	$h{$i} = '';
+       $h{$i} = '';
     }
     @out = keys %h;
     return \@out;
