@@ -136,5 +136,4 @@ int set_cpu_affinity(int cpu)
   }
 #endif
   return 0;
-#endif
 }
