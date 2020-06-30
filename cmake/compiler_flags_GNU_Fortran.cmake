@@ -1,4 +1,4 @@
-# (C) Copyright 2018 UCAR.
+# (C) Copyright 2018-2020 UCAR.
 #
 # This software is licensed under the terms of the Apache Licence Version 2.0
 # which can be obtained at http://www.apache.org/licenses/LICENSE-2.0.
@@ -7,7 +7,11 @@
 # FLAGS COMMON TO ALL BUILD TYPES
 ####################################################################
 
-set( CMAKE_Fortran_FLAGS "${CMAKE_Fortran_FLAGS} -fdefault-real-8 -fdefault-double-8 -fcray-pointer -fconvert=big-endian -ffree-line-length-none -fno-range-check -fbacktrace")
+if (FV3_PRECISION=DOUBLE)
+  set( CMAKE_Fortran_FLAGS "${CMAKE_Fortran_FLAGS} -fdefault-real-8 -fdefault-double-8")
+endif()
+
+set( CMAKE_Fortran_FLAGS "${CMAKE_Fortran_FLAGS} -fcray-pointer -fconvert=big-endian -ffree-line-length-none -fno-range-check -fbacktrace")
 
 ####################################################################
 # RELEASE FLAGS
@@ -40,4 +44,3 @@ set( CMAKE_Fortran_LINK_FLAGS    "" )
 # -fstack-arrays     : Allocate automatic arrays on the stack (needs large stacksize!!!)
 # -funroll-all-loops : Unroll all loops
 # -fcheck=bounds     : Bounds checking
-

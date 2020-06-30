@@ -1,4 +1,4 @@
-# (C) Copyright 2018 UCAR.
+# (C) Copyright 2018-2020 UCAR.
 #
 # This software is licensed under the terms of the Apache Licence Version 2.0
 # which can be obtained at http://www.apache.org/licenses/LICENSE-2.0.
@@ -7,7 +7,11 @@
 # FLAGS COMMON TO ALL BUILD TYPES
 ####################################################################
 
-set( CMAKE_Fortran_FLAGS "${CMAKE_Fortran_FLAGS} -fno-alias -auto -safe-cray-ptr -ftz -assume byterecl -i4 -r8 -nowarn -sox -traceback" )
+if (FV3_PRECISION=DOUBLE)
+  set( CMAKE_Fortran_FLAGS "${CMAKE_Fortran_FLAGS} -r8")
+endif()
+
+set( CMAKE_Fortran_FLAGS "${CMAKE_Fortran_FLAGS} -fno-alias -auto -safe-cray-ptr -ftz -assume byterecl -i4 -nowarn -sox -traceback" )
 
 ####################################################################
 # RELEASE FLAGS
@@ -38,4 +42,3 @@ set( CMAKE_Fortran_LINK_FLAGS    "" )
 # Meaning of flags
 # ----------------
 # todo
-
