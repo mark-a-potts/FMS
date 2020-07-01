@@ -7,7 +7,7 @@
 # FLAGS COMMON TO ALL BUILD TYPES
 ####################################################################
 
-if (FV3_PRECISION=DOUBLE)
+if (FV3_PRECISION MATCHES DOUBLE OR NOT FV3_PRECISION)
   set( CMAKE_Fortran_FLAGS "${CMAKE_Fortran_FLAGS} -r8")
 endif()
 

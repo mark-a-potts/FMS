@@ -12,8 +12,7 @@ if( APPLE )
 endif()
 
 if (FV3_PRECISION=SINGLE)
-  add_definitions( -OVERLOAD_R4 )
-  add_definitions( -OVERLOAD_R8 )
+  add_definitions( -OVERLOAD_R4 -OVERLOAD_R8 )
 endif()
 
 #######################################################################################
