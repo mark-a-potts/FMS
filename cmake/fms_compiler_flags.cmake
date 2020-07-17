@@ -45,7 +45,7 @@ if (FV3LM_PRECISION MATCHES "DOUBLE" OR NOT FV3LM_PRECISION)
 
 else()
 
-  add_definitions( -DOVERLOAD_R4 DOVERLOAD_R8 )
+  add_definitions( -DOVERLOAD_R4 -DOVERLOAD_R8 )
 
 endif()
 
