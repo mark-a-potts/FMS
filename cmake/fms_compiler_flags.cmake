@@ -8,6 +8,22 @@
 # ---------------------------------
 add_definitions( -Duse_libMPI -DSPMD -Duse_netCDF -Duse_LARGEFILE )
 
+# Special cases
+# -------------
+if( CMAKE_Fortran_COMPILER_ID MATCHES "GNU" OR CMAKE_Fortran_COMPILER_ID MATCHES "Clang")
+
+  set( CMAKE_Fortran_FLAGS "${CMAKE_Fortran_FLAGS} -ffree-line-length-none -fdec -fno-range-check ")
+
+elseif( CMAKE_Fortran_COMPILER_ID MATCHES "Intel" )
+
+  include( compiler_flags_Intel_Fortran )
+
+endif()
+
+if( APPLE )
+  add_definitions( -D__APPLE__ )
+endif()
+
 # Option to compile FMS in single or double precision
 # --------------------------------------------------------
 if (FV3LM_PRECISION MATCHES "DOUBLE" OR NOT FV3LM_PRECISION)
@@ -47,14 +63,4 @@ else()
 
   add_definitions( -DOVERLOAD_R4 -DOVERLOAD_R8 )
 
-endif()
-
-# Special cases
-# -------------
-if( CMAKE_Fortran_COMPILER_ID MATCHES "GNU" OR CMAKE_Fortran_COMPILER_ID MATCHES "Clang")
-  set( CMAKE_Fortran_FLAGS "${CMAKE_Fortran_FLAGS} -ffree-line-length-none -fdec -fno-range-check ")
-endif()
-
-if( APPLE )
-  add_definitions( -D__APPLE__ )
 endif()
