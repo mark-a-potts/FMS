@@ -6,7 +6,7 @@
 
 # Standard FMS compiler definitions
 # ---------------------------------
-add_definitions( -Duse_libMPI -DSPMD -Duse_netCDF -Duse_LARGEFILE )
+add_definitions( -Duse_libMPI -DSPMD -Duse_netCDF -Duse_LARGEFILE -DGFS_PHYS )
 
 # Special cases
 # -------------
