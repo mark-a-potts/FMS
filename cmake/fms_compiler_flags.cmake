@@ -49,6 +49,10 @@ if (FV3LM_PRECISION MATCHES "DOUBLE" OR NOT FV3LM_PRECISION)
 
     set( CMAKE_Fortran_FLAGS "${CMAKE_Fortran_FLAGS} -r8")
 
+  elseif( CMAKE_Fortran_COMPILER_ID MATCHES "NVHPC" )
+
+    set( CMAKE_Fortran_FLAGS "${CMAKE_Fortran_FLAGS} -r8")
+
   elseif( CMAKE_Fortran_COMPILER_ID MATCHES "XL" )
 
     set( CMAKE_Fortran_FLAGS "${CMAKE_Fortran_FLAGS} -qdpc")
