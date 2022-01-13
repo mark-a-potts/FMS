@@ -10,6 +10,8 @@
 cmake_minimum_required( VERSION 3.12 )
 project( fms VERSION 2020.4.0 LANGUAGES C Fortran )
 
+option(OPENMP    "Build FMS with OpenMP support" OFF)
+
 ## Ecbuild integration
 find_package( ecbuild 3.3.2 REQUIRED )
 include( ecbuild_system NO_POLICY_SCOPE )
@@ -25,7 +27,9 @@ include( fms_compiler_flags )
 
 find_package( jedicmake QUIET)
 find_package( MPI REQUIRED COMPONENTS C Fortran )
-find_package( OpenMP COMPONENTS C Fortran )
+if(OPENMP)
+  find_package(OpenMP REQUIRED COMPONENTS C Fortran)
+endif()
 find_package( NetCDF REQUIRED COMPONENTS Fortran )
 
 ################################################################################
@@ -254,7 +258,9 @@ ecbuild_add_library( TARGET   fms
 # Link dependencies
 target_link_libraries( fms PUBLIC NetCDF::NetCDF_Fortran )
 target_link_libraries( fms PUBLIC MPI::MPI_Fortran )
-target_link_libraries( fms PUBLIC OpenMP::OpenMP_C OpenMP::OpenMP_Fortran )
+if(OPENMP)
+  target_link_libraries( fms PUBLIC OpenMP::OpenMP_C OpenMP::OpenMP_Fortran )
+endif()
 
 ################################################################################
 
