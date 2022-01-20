@@ -10,7 +10,7 @@
 cmake_minimum_required( VERSION 3.12 )
 project( fms VERSION 2020.4.0 LANGUAGES C Fortran )
 
-option(OPENMP "Build FMS with OpenMP support" OFF)
+option(OPENMP "Build FMS with OpenMP support" ON)
 
 ## Ecbuild integration
 find_package( ecbuild 3.3.2 REQUIRED )
