@@ -11,8 +11,10 @@ if(NOT MPI_Fortran_FOUND)
     find_package( MPI REQUIRED COMPONENTS Fortran )
 endif()
 
-if(NOT OpenMP_Fortran_FOUND OR NOT OpenMP_C_FOUND )
-    find_package( OpenMP REQUIRED COMPONENTS C Fortran )
+if(@OPENMP@)
+    if(NOT OpenMP_Fortran_FOUND OR NOT OpenMP_C_FOUND )
+        find_package( OpenMP REQUIRED COMPONENTS C Fortran )
+    endif()
 endif()
 
 #Export Fortran compiler version for checking module compatibility
