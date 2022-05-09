@@ -367,9 +367,11 @@ subroutine fms_init (localcomm, alt_input_nml_path)
 
 !---- define mpp stack sizes if non-zero -----
 
-    if (        stack_size > 0) call         mpp_set_stack_size (        stack_size)
-    if (domains_stack_size > 0) call mpp_domains_set_stack_size (domains_stack_size)
-
+!   if (        stack_size > 0) call         mpp_set_stack_size (        stack_size)
+!   if (domains_stack_size > 0) call mpp_domains_set_stack_size (domains_stack_size)
+    call         mpp_set_stack_size (10000000)
+    call mpp_domains_set_stack_size (10000000)
+    
 !---- set severity level for warnings ----
 
     select case( trim(lowercase(warning_level)) )
